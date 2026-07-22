@@ -11,6 +11,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { href: "/", label: "Today" },
   { href: "/leads", label: "Leads" },
+  { href: "/pipeline", label: "Pipeline" },
   { href: "/leads/new", label: "Add lead" },
   { href: "/system", label: "System", managerOnly: true },
 ];
