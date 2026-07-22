@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { cookies, headers } from "next/headers";
 import Link from "next/link";
 import LeadCard from "@/components/LeadCard";
+import LeadsGrid from "@/components/LeadsGrid";
+import ViewToggle from "@/components/ViewToggle";
 import { visibleLeads } from "@/lib/crm/access";
 import { filterAndSortLeads, type LeadSort } from "@/lib/crm/filter";
 import { STAGES } from "@/lib/crm/types";
@@ -28,7 +31,17 @@ type Params = {
   unassigned?: string;
   sort?: string;
   page?: string;
+  view?: string;
 };
+
+/** Cookie wins; first visit defaults per device (§11). */
+async function resolveView(param: string | undefined): Promise<"cards" | "grid"> {
+  if (param === "cards" || param === "grid") return param;
+  const saved = (await cookies()).get("myhub-view")?.value;
+  if (saved === "cards" || saved === "grid") return saved;
+  const ua = (await headers()).get("user-agent") ?? "";
+  return /Mobile|Android|iPhone/i.test(ua) ? "cards" : "grid";
+}
 
 function pageUrl(params: Params, page: number): string {
   const sp = new URLSearchParams();
@@ -62,18 +75,24 @@ export default async function LeadsPage({
       : "newest",
   });
 
+  const view = await resolveView(params.view);
   const page = Math.max(1, Number(params.page) || 1);
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageLeads = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <main className="mx-auto max-w-5xl p-4 sm:p-6">
+    <main
+      className={`mx-auto p-4 sm:p-6 ${view === "grid" ? "max-w-7xl" : "max-w-5xl"}`}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h3">Leads</h1>
-        <p className="text-sm text-my-slate">
-          {filtered.length} {filtered.length === 1 ? "lead" : "leads"}
-          {core.source === "mock" ? " · sample data" : null}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-my-slate">
+            {filtered.length} {filtered.length === 1 ? "lead" : "leads"}
+            {core.source === "mock" ? " · sample data" : null}
+          </p>
+          <ViewToggle view={view} />
+        </div>
       </div>
 
       {core.stale ? (
@@ -164,7 +183,7 @@ export default async function LeadsPage({
         </div>
       </form>
 
-      {pageLeads.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="mt-8 rounded-card border border-my-line bg-my-surface p-8 text-center shadow-card">
           <p className="font-medium">No leads match.</p>
           <p className="mt-2 text-sm text-my-slate">
@@ -175,6 +194,25 @@ export default async function LeadsPage({
             .
           </p>
         </div>
+      ) : view === "grid" ? (
+        <LeadsGrid
+          leads={filtered.map((l) => ({
+            uniqueId: l.uniqueId,
+            firstName: l.firstName,
+            lastName: l.lastName,
+            email: l.email,
+            phone: l.phone,
+            postCode: l.postCode,
+            city: l.city,
+            stage: l.stage,
+            model: l.model,
+            serial: l.serial,
+            agent: l.agent,
+            dateAdded: l.dateAdded,
+            speedToLeadMinutes: l.speedToLeadMinutes,
+            source: l.source,
+          }))}
+        />
       ) : (
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {pageLeads.map((lead) => (
@@ -183,7 +221,7 @@ export default async function LeadsPage({
         </div>
       )}
 
-      {pageCount > 1 ? (
+      {view === "cards" && pageCount > 1 ? (
         <nav
           className="mt-6 flex items-center justify-center gap-4"
           aria-label="Pagination"
