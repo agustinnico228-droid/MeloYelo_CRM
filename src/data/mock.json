@@ -1,0 +1,158 @@
+{
+  "contacts": [
+    {
+      "id": "c1",
+      "name": "Sofia Marchetti",
+      "email": "sofia.marchetti@lumina.io",
+      "phone": "+39 333 482 1190",
+      "company": "Lumina Analytics",
+      "role": "Head of Data",
+      "status": "active",
+      "createdAt": "2026-02-14"
+    },
+    {
+      "id": "c2",
+      "name": "Jonas Weber",
+      "email": "j.weber@nordwind.de",
+      "phone": "+49 170 555 2231",
+      "company": "Nordwind GmbH",
+      "role": "CTO",
+      "status": "active",
+      "createdAt": "2026-03-02"
+    },
+    {
+      "id": "c3",
+      "name": "Amara Diallo",
+      "email": "amara@bridgepoint.co",
+      "phone": "+44 7911 042 887",
+      "company": "Bridgepoint Ventures",
+      "role": "Partner",
+      "status": "lead",
+      "createdAt": "2026-04-18"
+    },
+    {
+      "id": "c4",
+      "name": "Mateo Fernández",
+      "email": "mateo.f@solaria.es",
+      "phone": "+34 612 990 456",
+      "company": "Solaria Energy",
+      "role": "Operations Manager",
+      "status": "active",
+      "createdAt": "2026-05-06"
+    },
+    {
+      "id": "c5",
+      "name": "Ingrid Halvorsen",
+      "email": "ingrid@fjordtech.no",
+      "phone": "+47 912 33 480",
+      "company": "FjordTech AS",
+      "role": "Product Lead",
+      "status": "lead",
+      "createdAt": "2026-05-29"
+    },
+    {
+      "id": "c6",
+      "name": "Ravi Subramanian",
+      "email": "ravi.s@meridianlabs.com",
+      "phone": "+1 (415) 555-0173",
+      "company": "Meridian Labs",
+      "role": "VP Engineering",
+      "status": "inactive",
+      "createdAt": "2026-01-21"
+    },
+    {
+      "id": "c7",
+      "name": "Claire Dubois",
+      "email": "claire.dubois@atelier5.fr",
+      "phone": "+33 6 44 12 09 78",
+      "company": "Atelier Cinq",
+      "role": "Founder",
+      "status": "active",
+      "createdAt": "2026-06-11"
+    },
+    {
+      "id": "c8",
+      "name": "Tomás Oliveira",
+      "email": "tomas@riverstone.pt",
+      "phone": "+351 912 445 673",
+      "company": "Riverstone Digital",
+      "role": "Marketing Director",
+      "status": "lead",
+      "createdAt": "2026-07-01"
+    }
+  ],
+  "deals": [
+    {
+      "id": "d1",
+      "title": "Lumina — analytics platform license",
+      "contactId": "c1",
+      "value": 48000,
+      "stage": "proposal",
+      "closeDate": "2026-08-15"
+    },
+    {
+      "id": "d2",
+      "title": "Nordwind — data pipeline rebuild",
+      "contactId": "c2",
+      "value": 92000,
+      "stage": "qualified",
+      "closeDate": "2026-09-30"
+    },
+    {
+      "id": "d3",
+      "title": "Bridgepoint — portfolio reporting suite",
+      "contactId": "c3",
+      "value": 35000,
+      "stage": "lead",
+      "closeDate": "2026-10-10"
+    },
+    {
+      "id": "d4",
+      "title": "Solaria — IoT telemetry dashboard",
+      "contactId": "c4",
+      "value": 61500,
+      "stage": "won",
+      "closeDate": "2026-06-20"
+    },
+    {
+      "id": "d5",
+      "title": "FjordTech — CRM integration pilot",
+      "contactId": "c5",
+      "value": 18000,
+      "stage": "qualified",
+      "closeDate": "2026-08-31"
+    },
+    {
+      "id": "d6",
+      "title": "Meridian — support renewal",
+      "contactId": "c6",
+      "value": 12000,
+      "stage": "lost",
+      "closeDate": "2026-05-01"
+    },
+    {
+      "id": "d7",
+      "title": "Atelier Cinq — e-commerce analytics",
+      "contactId": "c7",
+      "value": 27500,
+      "stage": "proposal",
+      "closeDate": "2026-09-05"
+    },
+    {
+      "id": "d8",
+      "title": "Riverstone — attribution modelling",
+      "contactId": "c8",
+      "value": 44000,
+      "stage": "lead",
+      "closeDate": "2026-11-15"
+    },
+    {
+      "id": "d9",
+      "title": "Nordwind — phase 2 expansion",
+      "contactId": "c2",
+      "value": 138000,
+      "stage": "lead",
+      "closeDate": "2026-12-18"
+    }
+  ]
+}
