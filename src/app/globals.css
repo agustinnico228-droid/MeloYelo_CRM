@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+/*
+ * MeloYelo brand system — §5 of the build spec.
+ * #FFDE00 fails WCAG for text: yellow is a surface/accent colour only,
+ * and any text on yellow must be --color-my-ink.
+ */
+@theme {
+  /* Palette */
+  --color-my-yellow: #ffde00;
+  --color-my-green: #5eb132;
+  --color-my-ink: #14161a;
+  --color-my-slate: #5b6672;
+  --color-my-paper: #fbfbf9;
+  --color-my-surface: #ffffff;
+  --color-my-line: #e6e8ea;
+  --color-my-alert: #c0392b;
+  --color-my-warn: #e8a317;
+
+  /* Stage progression accents not in the core palette */
+  --color-stage-blue: #2e6fd8; /* Made contact — in motion */
+  --color-stage-deep: #3f8f22; /* MY Customer — won, deepest green */
+
+  /*
+   * Typography. Bikys Heading has no confirmed web licence (§18.1):
+   * display type deliberately falls back to Heebo 700. When licensed
+   * WOFF2 files land in /public/fonts, add a next/font/local var
+   * --font-bikys and put it first in --font-display.
+   */
+  --font-display: var(--font-heebo), system-ui, sans-serif;
+  --font-body: var(--font-heebo), system-ui, -apple-system, sans-serif;
+
+  /* Fluid type scale — hits brand values (60/50/18) at desktop */
+  --text-h1: clamp(2rem, 1.3rem + 3vw, 3.75rem);
+  --text-h1--line-height: 1.1;
+  --text-h2: clamp(1.75rem, 1.2rem + 2.4vw, 3.125rem);
+  --text-h2--line-height: 1.15;
+  --text-h3: clamp(1.375rem, 1.1rem + 1.2vw, 1.75rem);
+  --text-h3--line-height: 1.25;
+  --text-body: 1.125rem;
+  --text-body--line-height: 1.6;
+  /* 16px is the hard floor anywhere in the UI */
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.5;
+
+  /* Shape */
+  --radius-card: 10px;
+  --radius-control: 8px;
+
+  /* The one shadow */
+  --shadow-card: 0 1px 3px rgb(20 22 26 / 0.08);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-my-paper);
+    color: var(--color-my-ink);
+  }
+
+  body {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+
+  h1 {
+    font-size: var(--text-h1);
+    line-height: var(--text-h1--line-height);
+  }
+
+  h2 {
+    font-size: var(--text-h2);
+    line-height: var(--text-h2--line-height);
+  }
+
+  h3 {
+    font-size: var(--text-h3);
+    line-height: var(--text-h3--line-height);
+  }
+}
