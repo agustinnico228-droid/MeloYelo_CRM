@@ -22,7 +22,10 @@ export default auth((req) => {
 });
 
 export const config = {
+  // /admin and /api/* belong to Payload, which enforces its own auth and
+  // per-collection access control — the hub's middleware must not
+  // intercept the CMS login flow. /api/auth stays with Auth.js.
   matcher: [
-    "/((?!signin|api/auth|_next/static|_next/image|favicon.ico|fonts/).*)",
+    "/((?!signin|api/|admin|_next/static|_next/image|favicon.ico|fonts/|media/).*)",
   ],
 };

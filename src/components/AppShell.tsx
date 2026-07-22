@@ -5,6 +5,8 @@ interface NavItem {
   href: string;
   label: string;
   managerOnly?: boolean;
+  /** Sidebar only — the mobile bottom nav keeps the four core actions. */
+  desktopOnly?: boolean;
 }
 
 // Grows as build phases land; §11 is the full map.
@@ -13,7 +15,9 @@ const NAV: NavItem[] = [
   { href: "/leads", label: "Leads" },
   { href: "/pipeline", label: "Pipeline" },
   { href: "/leads/new", label: "Add lead" },
-  { href: "/system", label: "System", managerOnly: true },
+  { href: "/guides", label: "Guides", desktopOnly: true },
+  { href: "/known-issues", label: "Known issues", desktopOnly: true },
+  { href: "/system", label: "System", managerOnly: true, desktopOnly: true },
 ];
 
 function navFor(user: SessionUser): NavItem[] {
@@ -81,7 +85,7 @@ export default function AppShell({
         aria-label="Main"
         className="fixed inset-x-0 bottom-0 z-20 flex border-t border-my-line bg-my-surface md:hidden"
       >
-        {items.map((item) => (
+        {items.filter((i) => !i.desktopOnly).map((item) => (
           <Link
             key={item.href}
             href={item.href}

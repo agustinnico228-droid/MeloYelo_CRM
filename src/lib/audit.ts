@@ -7,10 +7,10 @@ import path from "node:path";
  * record, field, old → new, timestamp. The sheet's Logs tab is a backup,
  * not the audit trail.
  *
- * Storage: Postgres via the Payload auditLog collection once Phase 10
- * lands. Until then entries append to a local JSONL file so nothing is
- * lost during development (Cloud Run's disk is ephemeral — do not ship
- * to production without the Postgres wiring).
+ * Storage: the Payload auditLog collection (Postgres) when DATABASE_URI
+ * is configured — read-only in the admin UI. Development without a
+ * database appends to a local JSONL file instead (Cloud Run's disk is
+ * ephemeral — production needs the database).
  */
 
 export interface AuditEntry {
@@ -33,6 +33,27 @@ export async function recordAudit(
     timestamp: new Date().toISOString(),
     ...e,
   }));
+
+  if (process.env.DATABASE_URI) {
+    try {
+      const { createAuditEntry } = await import("./cms");
+      for (const e of stamped) {
+        await createAuditEntry({
+          summary: `${e.actorEmail} · ${e.action} ${e.uniqueId} · ${e.field}`,
+          actorEmail: e.actorEmail,
+          action: e.action,
+          uniqueId: e.uniqueId,
+          field: e.field,
+          oldValue: e.oldValue,
+          newValue: e.newValue,
+        });
+      }
+      return;
+    } catch (err) {
+      console.error("audit: Payload write failed, falling back to file", err);
+    }
+  }
+
   try {
     await mkdir(path.dirname(AUDIT_FILE), { recursive: true });
     await appendFile(

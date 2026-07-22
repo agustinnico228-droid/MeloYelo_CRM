@@ -1,6 +1,9 @@
 import Link from "next/link";
+import AnnouncementBanner from "@/components/AnnouncementBanner";
 import StagePill from "@/components/StagePill";
 import { leadDisplayName } from "@/components/LeadCard";
+import { getActiveAnnouncements, getOpenKnownIssueCount } from "@/lib/cms";
+import { lexicalToPlainText } from "@/lib/lexical-text";
 import { visibleLeads } from "@/lib/crm/access";
 import { parseCrmDate, timeSince } from "@/lib/crm/dates";
 import { needsActionNow, sortByWaiting } from "@/lib/crm/needs-action";
@@ -28,7 +31,11 @@ export default async function TodayPage() {
     );
   }
 
-  const core = await getCoreData();
+  const [core, announcements, openIssues] = await Promise.all([
+    getCoreData(),
+    getActiveAnnouncements(user.role),
+    getOpenKnownIssueCount(),
+  ]);
   const mine = visibleLeads(user, core.leads);
   const seesAll = canSeeAllLeads(user.role);
   const now = new Date();
@@ -71,6 +78,29 @@ export default async function TodayPage() {
           })}
         </p>
       </div>
+
+      <AnnouncementBanner
+        announcements={announcements.map((a) => ({
+          id: String(a.id),
+          title: a.title,
+          bodyText: lexicalToPlainText(a.body),
+          severity: a.severity,
+        }))}
+      />
+
+      {openIssues > 0 ? (
+        <Link
+          href="/known-issues"
+          className="block rounded-card border border-my-warn/40 bg-my-warn/10 p-4 shadow-card transition-colors hover:bg-my-warn/20"
+        >
+          <span className="font-bold">
+            {openIssues} known {openIssues === 1 ? "issue" : "issues"}
+          </span>{" "}
+          <span className="text-sm text-my-slate">
+            — tap for details and workarounds.
+          </span>
+        </Link>
+      ) : null}
 
       {core.stale ? (
         <p className="rounded-control border border-my-warn/40 bg-my-warn/10 px-4 py-2 text-sm">
