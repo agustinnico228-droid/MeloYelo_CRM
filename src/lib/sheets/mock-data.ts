@@ -341,6 +341,20 @@ export const MOCK_TABS: Record<string, string[][]> = {
     ["LIVE_UPDATE_WEB_APP_URL", "https://script.google.com/macros/s/mock/exec"],
     ["HUB_API_SECRET", "mock-hub-secret"],
   ],
+  "New contact submissions": [
+    [
+      "Timestamp",
+      "First Name",
+      "Last Name",
+      "Email",
+      "Phone",
+      "Post Code",
+      "City",
+      "Notes",
+      "Source",
+      "Processed",
+    ],
+  ],
   Logs: [
     ["Timestamp", "Type", "Message"],
     ["22/07/2026 07:00:12", "INFO", "processNewContactSubmissionsBatch: 1 processed"],

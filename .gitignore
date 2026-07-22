@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local audit fallback (Phase 6; Postgres in Phase 10)
+.data/

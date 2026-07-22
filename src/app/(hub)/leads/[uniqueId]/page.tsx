@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import StagePill from "@/components/StagePill";
+import LeadEditor from "@/components/LeadEditor";
 import { leadDisplayName } from "@/components/LeadCard";
 import { canViewLead } from "@/lib/crm/access";
 import { describeCrmDate, timeSince } from "@/lib/crm/dates";
@@ -8,8 +9,10 @@ import { notesNewestFirst, parseNotes } from "@/lib/crm/notes";
 import { phoneHref } from "@/lib/crm/phone";
 import { isMalformedPostcode } from "@/lib/crm/postcode";
 import { formatMinutes } from "@/lib/crm/speed-to-lead";
+import { allowedNextStages } from "@/lib/crm/stages";
+import { canReassign } from "@/lib/roles";
 import { requireUser } from "@/lib/session";
-import { getCoreData } from "@/lib/sheets";
+import { getCoreData, getLookupData } from "@/lib/sheets";
 
 export const metadata: Metadata = { title: "Lead" };
 export const dynamic = "force-dynamic";
@@ -48,6 +51,9 @@ export default async function LeadDetailPage({
   const lead = core.leads.find((l) => l.uniqueId === uniqueId);
   // Not found and not-yours look identical — nothing leaks (§14).
   if (!lead || !canViewLead(user, lead)) notFound();
+
+  const managerCanReassign = user.role !== null && canReassign(user.role);
+  const agents = managerCanReassign ? (await getLookupData()).agents : [];
 
   const name = leadDisplayName(lead);
   const tel = phoneHref(lead.phone);
@@ -99,11 +105,6 @@ export default async function LeadDetailPage({
             </a>
           ) : null}
         </div>
-
-        <p className="mt-4 rounded-control border border-my-line bg-my-paper px-4 py-3 text-sm text-my-slate">
-          Stage changes and notes get saved from here once the write layer
-          lands (next phase).
-        </p>
       </header>
 
       {unassigned ? (
@@ -115,20 +116,35 @@ export default async function LeadDetailPage({
               : isMalformedPostcode(lead.postCode)
                 ? `The postcode "${lead.postCode}" doesn't look right, so routing failed.`
                 : `The postcode "${lead.postCode}" isn't in the routing table.`}{" "}
-            Fixing the postcode will route it automatically.
+            Fix the postcode in the details below and it will be routed
+            automatically.
           </p>
         </section>
       ) : null}
 
+      <LeadEditor
+        key={lead.uniqueId}
+        uniqueId={lead.uniqueId}
+        stage={lead.stage}
+        allowedStages={allowedNextStages(lead.stage)}
+        fields={{
+          firstName: lead.firstName,
+          lastName: lead.lastName,
+          email: lead.email,
+          phone: lead.phone,
+          postCode: lead.postCode,
+          city: lead.city,
+          model: lead.model,
+          serial: lead.serial,
+        }}
+        agents={agents.map((a) => ({ name: a.name, email: a.crmEmail }))}
+        currentAgentEmail={lead.agentEmail}
+        canReassignLead={managerCanReassign}
+      />
+
       <section className="rounded-card border border-my-line bg-my-surface p-5 shadow-card">
-        <h2 className="text-h3">Details</h2>
+        <h2 className="text-h3">Record</h2>
         <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Email" value={lead.email} />
-          <Field label="Phone" value={lead.phone} />
-          <Field label="Postcode" value={lead.postCode} />
-          <Field label="City" value={lead.city} />
-          <Field label="Model" value={lead.model} />
-          <Field label="Serial" value={lead.serial} />
           <Field label="Added" value={describeCrmDate(lead.dateAdded)} />
           <Field
             label="Speed to lead"
@@ -138,6 +154,8 @@ export default async function LeadDetailPage({
                 : formatMinutes(lead.speedToLeadMinutes)
             }
           />
+          <Field label="Source" value={lead.source} />
+          <Field label="Unique ID" value={lead.uniqueId} />
           {lead.trackingDetails ? (
             <Field label="Tracking" value={lead.trackingDetails} />
           ) : null}
