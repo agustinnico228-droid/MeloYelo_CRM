@@ -15,6 +15,7 @@ const NAV: NavItem[] = [
   { href: "/leads", label: "Leads" },
   { href: "/pipeline", label: "Pipeline" },
   { href: "/leads/new", label: "Add lead" },
+  { href: "/dashboards", label: "Dashboards", desktopOnly: true },
   { href: "/guides", label: "Guides", desktopOnly: true },
   { href: "/known-issues", label: "Known issues", desktopOnly: true },
   { href: "/system", label: "System", managerOnly: true, desktopOnly: true },

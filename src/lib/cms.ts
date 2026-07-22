@@ -123,6 +123,45 @@ export async function getOpenKnownIssueCount(): Promise<number> {
   }
 }
 
+export interface LookerUrls {
+  agent: string;
+  manager: string;
+  growth: string;
+}
+
+/** Looker embed URLs: Settings global first, env fallback (§11). */
+export async function getLookerUrls(): Promise<LookerUrls> {
+  const fromEnv: LookerUrls = {
+    agent: process.env.LOOKER_AGENT_REPORT_URL ?? "",
+    manager: process.env.LOOKER_MANAGER_REPORT_URL ?? "",
+    growth: process.env.LOOKER_GROWTH_REPORT_URL ?? "",
+  };
+  if (!isCmsConfigured()) return fromEnv;
+  try {
+    const payload = await payloadClient();
+    const settings = await payload.findGlobal({ slug: "settings" });
+    return {
+      agent: settings.looker?.agentReportUrl || fromEnv.agent,
+      manager: settings.looker?.managerReportUrl || fromEnv.manager,
+      growth: settings.looker?.growthReportUrl || fromEnv.growth,
+    };
+  } catch {
+    return fromEnv;
+  }
+}
+
+export async function getQuickLinks(role: Role | null) {
+  if (!isCmsConfigured()) return [];
+  try {
+    const payload = await payloadClient();
+    const res = await payload.find({ collection: "quickLinks", limit: 100 });
+    const allowed = audiencesFor(role);
+    return res.docs.filter((q) => allowed.includes(q.audience));
+  } catch {
+    return [];
+  }
+}
+
 /** Server-side audit sink (§10.5). Throws on failure so callers can fall back. */
 export async function createAuditEntry(data: {
   summary: string;

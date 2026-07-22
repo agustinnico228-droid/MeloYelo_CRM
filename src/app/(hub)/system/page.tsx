@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
-import { requireUser, hasRole } from "@/lib/session";
-import { getCoreData, getLookupData } from "@/lib/sheets";
+import Link from "next/link";
+import { getQuickLinks } from "@/lib/cms";
+import { describeCrmDate, parseCrmDate } from "@/lib/crm/dates";
+import { findLikelyDuplicates } from "@/lib/crm/duplicates";
 import { isMalformedPostcode } from "@/lib/crm/postcode";
+import type { Lead } from "@/lib/crm/types";
+import { hasRole, requireUser } from "@/lib/session";
+import { getCoreData, getLookupData } from "@/lib/sheets";
 
 export const metadata: Metadata = { title: "System" };
 export const dynamic = "force-dynamic";
@@ -12,6 +17,20 @@ function ageLabel(ageMs: number): string {
   if (s < 60) return `${s}s ago`;
   const m = Math.round(s / 60);
   return `${m} min ago`;
+}
+
+function latestBy(leads: Lead[], pick: (l: Lead) => boolean): Lead | null {
+  let best: Lead | null = null;
+  let bestTime = -1;
+  for (const l of leads) {
+    if (!pick(l)) continue;
+    const t = parseCrmDate(l.dateAdded)?.getTime() ?? -1;
+    if (t > bestTime) {
+      best = l;
+      bestTime = t;
+    }
+  }
+  return best;
 }
 
 function StatCard({
@@ -37,6 +56,24 @@ function StatCard({
   );
 }
 
+const SOURCES = [
+  "Website Form",
+  "AgentForm",
+  "Warranty Registration",
+  "Call Centre",
+];
+
+/** The rare "must go to the underlying tool" links (§11). */
+const TOOL_LINKS = [
+  {
+    label: "CRM sheet (working copy)",
+    url: "https://docs.google.com/spreadsheets/d/17xpNY8t5GVAikMQRMc-MpnxJAqk6-JU4G2zAkacFG6I",
+  },
+  { label: "Zapier dashboard", url: "https://zapier.com/app/zaps" },
+  { label: "Apps Script project", url: "https://script.google.com/home" },
+  { label: "Looker Studio", url: "https://lookerstudio.google.com" },
+];
+
 export default async function SystemPage() {
   const user = await requireUser();
 
@@ -52,15 +89,36 @@ export default async function SystemPage() {
     );
   }
 
-  const [core, lookups] = await Promise.all([getCoreData(), getLookupData()]);
+  const [core, lookups, quickLinks] = await Promise.all([
+    getCoreData(),
+    getLookupData(),
+    getQuickLinks(user.role),
+  ]);
 
-  const unassigned = core.leads.filter((l) => l.agentEmail === "").length;
-  const malformed = core.leads.filter((l) =>
-    isMalformedPostcode(l.postCode),
-  ).length;
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const unassigned = core.leads.filter((l) => l.agentEmail === "");
+  const malformed = core.leads.filter((l) => isMalformedPostcode(l.postCode));
+  const duplicates = findLikelyDuplicates(core.leads);
+  const lastLead = latestBy(core.leads, () => true);
+  const todayBySource = SOURCES.map((s) => ({
+    source: s,
+    count: core.leads.filter((l) => {
+      if (l.source !== s) return false;
+      const d = parseCrmDate(l.dateAdded);
+      return d !== null && d >= todayStart;
+    }).length,
+    last: latestBy(core.leads, (l) => l.source === s),
+  }));
+
+  const errorLogs = core.logs.filter((l) => l.raw[1] === "ERROR").slice(0, 5);
+  const lastBatch = core.logs.find((l) =>
+    (l.raw[2] ?? "").includes("processNewContactSubmissionsBatch"),
+  );
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-6">
+    <main className="mx-auto max-w-4xl space-y-8 p-4 sm:p-6">
       <h1 className="text-h3">System status</h1>
 
       {core.source === "mock" ? (
@@ -79,31 +137,156 @@ export default async function SystemPage() {
       ) : null}
 
       <section>
-        <h2 className="text-h3">Data</h2>
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard label="Leads" value={core.leads.length} />
-          <StatCard label="Agents" value={lookups.agents.length} />
-          <StatCard
-            label="Unassigned leads"
-            value={unassigned}
-            tone={unassigned > 0 ? "alert" : "ok"}
-          />
-          <StatCard
-            label="Malformed postcodes"
-            value={malformed}
-            tone={malformed > 0 ? "warn" : "ok"}
-          />
+        <h2 className="text-h3">Lead intake</h2>
+        <p className="mt-2 text-sm text-my-slate">
+          Last lead arrived:{" "}
+          {lastLead ? (
+            <>
+              <Link
+                href={`/leads/${lastLead.uniqueId}`}
+                className="font-medium text-my-ink underline"
+              >
+                {describeCrmDate(lastLead.dateAdded)}
+              </Link>{" "}
+              via {lastLead.source || "unknown source"}
+            </>
+          ) : (
+            "no leads yet"
+          )}
+        </p>
+        <div className="mt-3 overflow-x-auto rounded-card border border-my-line bg-my-surface shadow-card">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-my-line bg-my-paper">
+                <th className="px-4 py-2 font-bold">Source</th>
+                <th className="px-4 py-2 font-bold">Today</th>
+                <th className="px-4 py-2 font-bold">Last seen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {todayBySource.map((row) => (
+                <tr
+                  key={row.source}
+                  className="border-b border-my-line last:border-0"
+                >
+                  <td className="px-4 py-2">{row.source}</td>
+                  <td className="px-4 py-2">{row.count}</td>
+                  <td className="px-4 py-2 text-my-slate">
+                    {row.last ? describeCrmDate(row.last.dateAdded) : "never"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <p className="mt-3 text-sm text-my-slate">
-          Lead data refreshed {ageLabel(core.ageMs)} · lookup tabs{" "}
-          {ageLabel(lookups.ageMs)} · source: {core.source}
+        <p className="mt-2 text-sm text-my-slate">
+          Website and Campaign Monitor leads arrive via Zapier; a quiet
+          source above is the first sign a Zap needs attention.{" "}
+          <a
+            href="https://zapier.com/app/zaps"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            Manage Zaps
+          </a>
         </p>
       </section>
 
       <section>
+        <h2 className="text-h3">Apps Script</h2>
+        <p className="mt-2 text-sm text-my-slate">
+          Last batch run:{" "}
+          {lastBatch
+            ? `${lastBatch.raw[0]} — ${lastBatch.raw[2]}`
+            : "not seen in the recent log"}
+        </p>
+        {errorLogs.length > 0 ? (
+          <ul className="mt-3 space-y-2">
+            {errorLogs.map((log, i) => (
+              <li
+                key={i}
+                className="rounded-control border border-my-alert/40 bg-my-alert/5 px-4 py-2 text-sm"
+              >
+                <span className="font-bold text-my-alert">{log.raw[0]}</span>{" "}
+                {log.raw[2]}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-my-slate">
+            No recent errors in the script log.
+          </p>
+        )}
+      </section>
+
+      <section>
+        <h2 className="text-h3">Data health</h2>
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard label="Leads" value={core.leads.length} />
+          <StatCard
+            label="Unassigned"
+            value={unassigned.length}
+            tone={unassigned.length > 0 ? "alert" : "ok"}
+          />
+          <StatCard
+            label="Malformed postcodes"
+            value={malformed.length}
+            tone={malformed.length > 0 ? "warn" : "ok"}
+          />
+          <StatCard
+            label="Likely duplicates"
+            value={duplicates.length}
+            tone={duplicates.length > 0 ? "warn" : "ok"}
+          />
+        </div>
+        <p className="mt-3 text-sm text-my-slate">
+          Lead data refreshed {ageLabel(core.ageMs)} · lookup tabs{" "}
+          {ageLabel(lookups.ageMs)} · {lookups.agents.length} agents ·
+          source: {core.source}
+        </p>
+        {unassigned.length > 0 ? (
+          <p className="mt-2 text-sm">
+            <Link href="/leads?unassigned=1" className="underline">
+              Review unassigned leads
+            </Link>
+          </p>
+        ) : null}
+      </section>
+
+      {duplicates.length > 0 ? (
+        <section>
+          <h2 className="text-h3">Likely duplicates</h2>
+          <p className="mt-2 text-sm text-my-slate">
+            Candidates for a human to review — nothing is merged
+            automatically.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {duplicates.slice(0, 10).map((g) => (
+              <li
+                key={`${g.kind}:${g.key}`}
+                className="rounded-control border border-my-line bg-my-surface px-4 py-2 text-sm shadow-card"
+              >
+                <span className="font-medium capitalize">{g.kind}</span> match
+                on <span className="font-medium">{g.key}</span>:{" "}
+                {g.leads.map((l, i) => (
+                  <span key={l.uniqueId}>
+                    {i > 0 ? ", " : ""}
+                    <Link href={`/leads/${l.uniqueId}`} className="underline">
+                      {l.firstName} {l.lastName} (#{l.uniqueId})
+                    </Link>
+                  </span>
+                ))}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      <section>
         <h2 className="text-h3">Skipped rows</h2>
         {core.invalidRows.length === 0 ? (
-          <p className="mt-3 text-sm text-my-slate">
+          <p className="mt-2 text-sm text-my-slate">
             Every row in <em>All data</em> parsed cleanly.
           </p>
         ) : (
@@ -118,39 +301,34 @@ export default async function SystemPage() {
             ))}
           </ul>
         )}
-      </section>
-
-      {lookups.unmappedAgentHeaders.length > 0 ? (
-        <section>
-          <h2 className="text-h3">Unrecognised Agents columns</h2>
-          <p className="mt-3 text-sm text-my-slate">
-            These headers on the Agents tab aren&apos;t mapped:{" "}
+        {lookups.unmappedAgentHeaders.length > 0 ? (
+          <p className="mt-3 rounded-control border border-my-warn/40 bg-my-warn/10 px-4 py-2 text-sm">
+            Unrecognised Agents-tab columns:{" "}
             {lookups.unmappedAgentHeaders.join(", ")}
           </p>
-        </section>
-      ) : null}
+        ) : null}
+      </section>
 
       <section>
-        <h2 className="text-h3">Recent script log</h2>
-        <div className="mt-3 overflow-x-auto rounded-card border border-my-line bg-my-surface shadow-card">
-          <table className="w-full text-left text-sm">
-            <tbody>
-              {core.logs.slice(0, 10).map((log, i) => (
-                <tr key={i} className="border-b border-my-line last:border-0">
-                  {log.raw.slice(0, 3).map((cell, j) => (
-                    <td
-                      key={j}
-                      className={`px-4 py-2 ${
-                        cell === "ERROR" ? "font-bold text-my-alert" : ""
-                      }`}
-                    >
-                      {cell}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <h2 className="text-h3">The underlying tools</h2>
+        <p className="mt-2 text-sm text-my-slate">
+          For the rare case someone must go there.
+        </p>
+        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {[
+            ...quickLinks.map((q) => ({ label: q.label, url: q.url })),
+            ...TOOL_LINKS,
+          ].map((link) => (
+            <a
+              key={link.url}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-h-12 items-center rounded-control border border-my-line bg-my-surface px-4 font-medium shadow-card transition-colors hover:bg-my-paper"
+            >
+              {link.label} ↗
+            </a>
+          ))}
         </div>
       </section>
     </main>
