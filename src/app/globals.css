@@ -70,6 +70,12 @@
     font-weight: 700;
   }
 
+  /* Visible focus everywhere — keyboard users are first-class */
+  :focus-visible {
+    outline: 2px solid var(--color-my-ink);
+    outline-offset: 2px;
+  }
+
   h1 {
     font-size: var(--text-h1);
     line-height: var(--text-h1--line-height);
@@ -84,4 +90,36 @@
     font-size: var(--text-h3);
     line-height: var(--text-h3--line-height);
   }
+}
+
+/* CMS rich text (guides, pages) */
+.rich-text h2 {
+  margin-top: 1.5em;
+  font-size: var(--text-h3);
+}
+.rich-text h3 {
+  margin-top: 1.25em;
+  font-size: 1.25rem;
+}
+.rich-text p {
+  margin-top: 0.75em;
+}
+.rich-text ul,
+.rich-text ol {
+  margin-top: 0.75em;
+  padding-left: 1.5em;
+}
+.rich-text ul {
+  list-style: disc;
+}
+.rich-text ol {
+  list-style: decimal;
+}
+.rich-text a {
+  text-decoration: underline;
+}
+.rich-text img {
+  max-width: 100%;
+  border-radius: var(--radius-card);
+  margin-top: 1em;
 }

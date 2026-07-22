@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed": "payload run ./scripts/seed.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.86.0",

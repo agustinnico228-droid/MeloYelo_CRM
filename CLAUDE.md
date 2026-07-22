@@ -11,9 +11,19 @@ prototype is preserved on the `archive/vite-prototype` branch.
 
 ## Commands
 
-- `npm run dev` — Vite-free: Next dev server with Turbopack
-- `npm run build` — production build (also the type-check gate)
-- `npm test` — unit tests (Vitest, added in Phase 4; domain logic only)
+- `npm run dev` — Next dev server (Turbopack)
+- `npm run build` — production build via webpack (also the type-check
+  gate; Payload does not support Turbopack builds on Next 15)
+- `npm test` — Vitest unit tests over the domain logic in `src/lib/crm/`
+- `npm run seed` — starter CMS content + first admin user (needs
+  `DATABASE_URI`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`)
+
+Never run `npm run build` while the dev server is running — both write
+to `.next/` and the dev server corrupts.
+
+Note: Next is pinned exactly to a Payload-supported 15.x line
+(`15.4.x`); don't bump it without checking `@payloadcms/next` peer
+ranges.
 
 ## Hard rules (from the spec — never break these)
 

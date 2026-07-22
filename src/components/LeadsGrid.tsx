@@ -65,7 +65,7 @@ const COLUMNS: ColDef[] = [
 ];
 
 const STORAGE_KEY = "myhub.grid.columns";
-const ROW_H = 44;
+const ROW_H = 48; // §5: touch targets ≥ 48px
 const OVERSCAN = 10;
 
 const FIELD_KEYS = [
