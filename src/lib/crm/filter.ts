@@ -9,12 +9,16 @@ import type { Lead } from "./types";
 
 export type LeadSort = "newest" | "oldest" | "untouched";
 
+export type AlertFlag = "48h" | "5d" | "final";
+
 export interface LeadFilters {
   q?: string;
   stage?: string;
   source?: string;
   agentEmail?: string;
   unassigned?: boolean;
+  /** §14.4 stale-lead chips, backed by the sheet's alert-sent flags */
+  flag?: AlertFlag;
   sort?: LeadSort;
 }
 
@@ -66,6 +70,9 @@ export function filterAndSortLeads(
     out = out.filter((l) => l.agentEmail === f.agentEmail!.toLowerCase());
   }
   if (f.unassigned) out = out.filter((l) => l.agentEmail === "");
+  if (f.flag === "48h") out = out.filter((l) => l.alert48Sent !== "");
+  if (f.flag === "5d") out = out.filter((l) => l.alert5DaySent !== "");
+  if (f.flag === "final") out = out.filter((l) => l.finalFollowUpSent !== "");
 
   const sort = f.sort ?? "newest";
   return [...out].sort((a, b) => {

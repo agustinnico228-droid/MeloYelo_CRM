@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import StagePill from "@/components/StagePill";
+import CallFlowPanel from "@/components/CallFlowPanel";
 import LeadEditor from "@/components/LeadEditor";
 import { leadDisplayName } from "@/components/LeadCard";
 import { canViewLead } from "@/lib/crm/access";
@@ -120,6 +121,10 @@ export default async function LeadDetailPage({
             automatically.
           </p>
         </section>
+      ) : null}
+
+      {user.role === "ride_guide" && !viewingAs ? (
+        <CallFlowPanel uniqueId={lead.uniqueId} currentStage={lead.stage} />
       ) : null}
 
       {viewingAs ? (

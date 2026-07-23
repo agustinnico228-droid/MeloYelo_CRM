@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getQuickLinks } from "@/lib/cms";
+import { UNSUBSCRIBE_FLAG } from "@/lib/crm/call-outcomes";
 import { describeCrmDate, parseCrmDate } from "@/lib/crm/dates";
 import { findLikelyDuplicates } from "@/lib/crm/duplicates";
 import { isMalformedPostcode } from "@/lib/crm/postcode";
@@ -112,6 +113,9 @@ export default async function SystemPage() {
     last: latestBy(core.leads, (l) => l.source === s),
   }));
 
+  const pendingUnsubscribes = core.leads.filter((l) =>
+    l.notes.includes(UNSUBSCRIBE_FLAG),
+  );
   const errorLogs = core.logs.filter((l) => l.raw[1] === "ERROR").slice(0, 5);
   const lastBatch = core.logs.find((l) =>
     (l.raw[2] ?? "").includes("processNewContactSubmissionsBatch"),
@@ -252,6 +256,36 @@ export default async function SystemPage() {
             </Link>
           </p>
         ) : null}
+      </section>
+
+      <section>
+        <h2 className="text-h3">Pending unsubscribes</h2>
+        <p className="mt-2 text-sm text-my-slate">
+          Declined test rides flagged for removal from marketing emails.
+          Action these in Campaign Monitor — nothing is unsubscribed
+          automatically (§14.3), so an accidental bulk unsubscribe can&apos;t
+          happen.
+        </p>
+        {pendingUnsubscribes.length === 0 ? (
+          <p className="mt-3 text-sm text-my-slate">Nothing pending.</p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {pendingUnsubscribes.map((l) => (
+              <li
+                key={l.uniqueId}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-control border border-my-warn/40 bg-my-warn/10 px-4 py-2 text-sm"
+              >
+                <span>
+                  <Link href={`/leads/${l.uniqueId}`} className="font-medium underline">
+                    {l.firstName} {l.lastName}
+                  </Link>{" "}
+                  · {l.email || "no email"}
+                </span>
+                <span className="text-my-slate">#{l.uniqueId}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {duplicates.length > 0 ? (

@@ -5,7 +5,11 @@ import LeadCard from "@/components/LeadCard";
 import LeadsGrid from "@/components/LeadsGrid";
 import ViewToggle from "@/components/ViewToggle";
 import { visibleLeads } from "@/lib/crm/access";
-import { filterAndSortLeads, type LeadSort } from "@/lib/crm/filter";
+import {
+  filterAndSortLeads,
+  type AlertFlag,
+  type LeadSort,
+} from "@/lib/crm/filter";
 import { STAGES } from "@/lib/crm/types";
 import { canSeeAllLeads } from "@/lib/roles";
 import { getCoreData, getLookupData } from "@/lib/sheets";
@@ -29,10 +33,17 @@ type Params = {
   source?: string;
   agent?: string;
   unassigned?: string;
+  flag?: string;
   sort?: string;
   page?: string;
   view?: string;
 };
+
+const FLAG_CHIPS: { value: AlertFlag; label: string }[] = [
+  { value: "48h", label: "48 h alert sent" },
+  { value: "5d", label: "5 day alert sent" },
+  { value: "final", label: "Final follow-up sent" },
+];
 
 /** Cookie wins; first visit defaults per device (§11). */
 async function resolveView(param: string | undefined): Promise<"cards" | "grid"> {
@@ -62,12 +73,19 @@ export default async function LeadsPage({
   const seesAll = user.role !== null && canSeeAllLeads(user.role);
   const mine = visibleLeads(user, core.leads);
 
+  const activeFlag = (["48h", "5d", "final"] as const).includes(
+    params.flag as AlertFlag,
+  )
+    ? (params.flag as AlertFlag)
+    : undefined;
+
   const filtered = filterAndSortLeads(mine, {
     q: params.q,
     stage: params.stage,
     source: params.source,
     agentEmail: seesAll ? params.agent : undefined,
     unassigned: seesAll && params.unassigned === "1",
+    flag: activeFlag,
     sort: (["newest", "oldest", "untouched"] as const).includes(
       params.sort as LeadSort,
     )
@@ -182,6 +200,32 @@ export default async function LeadsPage({
           </button>
         </div>
       </form>
+
+      <div className="mt-3 flex flex-wrap gap-2" aria-label="Stale-lead filters">
+        {FLAG_CHIPS.map((chip) => {
+          const active = activeFlag === chip.value;
+          const sp = new URLSearchParams();
+          for (const [k, v] of Object.entries(params)) {
+            if (v && k !== "page" && k !== "flag") sp.set(k, v);
+          }
+          if (!active) sp.set("flag", chip.value);
+          return (
+            <Link
+              key={chip.value}
+              href={`/leads?${sp}`}
+              aria-pressed={active}
+              className={`flex min-h-10 items-center rounded-full border px-4 text-sm font-medium transition-colors ${
+                active
+                  ? "border-my-ink bg-my-ink text-white"
+                  : "border-my-line bg-my-surface text-my-ink hover:bg-my-paper"
+              }`}
+            >
+              {chip.label}
+              {active ? " ✕" : ""}
+            </Link>
+          );
+        })}
+      </div>
 
       {filtered.length === 0 ? (
         <div className="mt-8 rounded-card border border-my-line bg-my-surface p-8 text-center shadow-card">
