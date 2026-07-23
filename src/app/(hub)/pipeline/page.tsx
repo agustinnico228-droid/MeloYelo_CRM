@@ -5,8 +5,8 @@ import { parseCrmDate } from "@/lib/crm/dates";
 import { stageTone } from "@/lib/crm/stages";
 import { STAGES } from "@/lib/crm/types";
 import { leadDisplayName } from "@/components/LeadCard";
-import { requireUser } from "@/lib/session";
 import { getCoreData } from "@/lib/sheets";
+import { requireEffectiveUser } from "@/lib/view-as";
 
 export const metadata: Metadata = { title: "Pipeline" };
 export const dynamic = "force-dynamic";
@@ -34,7 +34,7 @@ function daysInStage(stageUpdatedAt: string, dateAdded: string): string | null {
 }
 
 export default async function PipelinePage() {
-  const user = await requireUser();
+  const { effective: user } = await requireEffectiveUser();
   const core = await getCoreData();
   const mine = visibleLeads(user, core.leads);
 

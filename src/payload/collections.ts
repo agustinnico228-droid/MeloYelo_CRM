@@ -67,8 +67,79 @@ export const Pages: CollectionConfig = {
   },
   fields: [
     { name: "title", type: "text", required: true },
+    // Path-style slugs allowed, e.g. "ride-guide/call-flow"
     { name: "slug", type: "text", required: true, unique: true },
+    {
+      name: "section",
+      type: "select",
+      defaultValue: "top",
+      options: ["top", "crm", "growth", "campaigns", "resources"],
+      required: true,
+    },
+    { name: "showToc", type: "checkbox", defaultValue: false },
+    // Surfaced as "Last reviewed {date}" so stale docs are visible
+    { name: "lastReviewed", type: "date" },
     { name: "layout", type: "blocks", blocks: pageBlocks },
+  ],
+};
+
+/** §13.1: embedded Looker reports, addable without a deploy. */
+export const Dashboards: CollectionConfig = {
+  slug: "dashboards",
+  orderable: true,
+  admin: { useAsTitle: "title", defaultColumns: ["title", "audience"] },
+  access: {
+    read: anyone,
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin,
+  },
+  fields: [
+    { name: "title", type: "text", required: true },
+    { name: "slug", type: "text", required: true, unique: true },
+    { name: "description", type: "textarea" },
+    { name: "lookerReportId", type: "text" },
+    { name: "lookerPageId", type: "text" },
+    audienceField,
+    { name: "lastReviewed", type: "date" },
+  ],
+};
+
+/** §13.1: campaign pages — live first, ended collapsed on /campaigns. */
+export const Campaigns: CollectionConfig = {
+  slug: "campaigns",
+  orderable: true,
+  admin: { useAsTitle: "title", defaultColumns: ["title", "code", "status"] },
+  access: {
+    read: anyone,
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin,
+  },
+  fields: [
+    { name: "title", type: "text", required: true },
+    { name: "slug", type: "text", required: true, unique: true },
+    { name: "code", type: "text" },
+    {
+      name: "status",
+      type: "select",
+      defaultValue: "planned",
+      options: ["planned", "live", "ended"],
+      required: true,
+    },
+    { name: "startsAt", type: "date" },
+    { name: "endsAt", type: "date" },
+    { name: "offer", type: "richText" },
+    { name: "landingPageUrl", type: "text" },
+    { name: "utmCampaign", type: "text" },
+    {
+      name: "reportLinks",
+      type: "array",
+      fields: [
+        { name: "label", type: "text", required: true },
+        { name: "url", type: "text", required: true },
+      ],
+    },
   ],
 };
 
@@ -194,6 +265,8 @@ export const collections: CollectionConfig[] = [
   Users,
   Media,
   Pages,
+  Dashboards,
+  Campaigns,
   Guides,
   KnownIssues,
   Announcements,

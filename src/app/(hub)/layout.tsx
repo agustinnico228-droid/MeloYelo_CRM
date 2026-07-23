@@ -1,11 +1,17 @@
 import AppShell from "@/components/AppShell";
-import { requireUser } from "@/lib/session";
+import { getNavigation } from "@/lib/cms";
+import { requireEffectiveUser } from "@/lib/view-as";
 
 export default async function HubLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await requireUser();
-  return <AppShell user={user}>{children}</AppShell>;
+  const { effective, viewingAs } = await requireEffectiveUser();
+  const nav = await getNavigation(effective.role);
+  return (
+    <AppShell user={effective} viewingAs={viewingAs} nav={nav}>
+      {children}
+    </AppShell>
+  );
 }

@@ -8,6 +8,7 @@ import { hubAddLead } from "../hub-api";
 import { allowWrite } from "../rate-limit";
 import { getSessionUser } from "../session";
 import { getLookupData, invalidateCoreCache } from "../sheets";
+import { getViewAs } from "../view-as";
 import type { ActionResult } from "./leads";
 
 const addLeadSchema = z
@@ -30,6 +31,13 @@ export async function addLead(input: unknown): Promise<ActionResult> {
   const user = await getSessionUser();
   if (!user || user.role === null) {
     return { ok: false, error: "You don't have access to add leads." };
+  }
+  const viewingAs = await getViewAs(user);
+  if (viewingAs) {
+    return {
+      ok: false,
+      error: `You're viewing as ${viewingAs.name} — read-only. Exit view-as to make changes.`,
+    };
   }
   const parsed = addLeadSchema.safeParse(input);
   if (!parsed.success) {

@@ -11,6 +11,7 @@ import { allowWrite } from "../rate-limit";
 import { canReassign } from "../roles";
 import { getSessionUser } from "../session";
 import { getCoreData, invalidateCoreCache } from "../sheets";
+import { getViewAs } from "../view-as";
 
 /**
  * All writes flow through here: session + role checks, zod validation,
@@ -56,6 +57,14 @@ async function guard(uniqueId: string): Promise<Guarded> {
   const user = await getSessionUser();
   if (!user || user.role === null) {
     return { error: "You don't have access to change leads." };
+  }
+  // Read-only while impersonating (A5): a manager must never create
+  // audit entries under another person's lens.
+  const viewingAs = await getViewAs(user);
+  if (viewingAs) {
+    return {
+      error: `You're viewing as ${viewingAs.name} — read-only. Exit view-as to make changes.`,
+    };
   }
   if (!allowWrite(user.email)) {
     return { error: "Too many changes at once — wait a moment and try again." };
@@ -176,6 +185,13 @@ export async function reassignLead(input: unknown): Promise<ActionResult> {
   const parsed = reassignSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: "That reassignment didn't look right." };
+  }
+  const viewingAs = await getViewAs(user);
+  if (viewingAs) {
+    return {
+      ok: false,
+      error: `You're viewing as ${viewingAs.name} — read-only. Exit view-as to make changes.`,
+    };
   }
   if (!allowWrite(user.email)) {
     return { ok: false, error: "Too many changes at once — wait a moment and try again." };

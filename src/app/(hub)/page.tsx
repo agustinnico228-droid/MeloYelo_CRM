@@ -11,13 +11,13 @@ import { phoneHref } from "@/lib/crm/phone";
 import { formatMinutes, speedToLeadStats } from "@/lib/crm/speed-to-lead";
 import { STAGES } from "@/lib/crm/types";
 import { canSeeAllLeads } from "@/lib/roles";
-import { requireUser } from "@/lib/session";
 import { getCoreData } from "@/lib/sheets";
+import { requireEffectiveUser } from "@/lib/view-as";
 
 export const dynamic = "force-dynamic";
 
 export default async function TodayPage() {
-  const user = await requireUser();
+  const { effective: user } = await requireEffectiveUser();
 
   if (user.role === null) {
     return (

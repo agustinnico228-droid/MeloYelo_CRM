@@ -11,7 +11,8 @@ export const Navigation: GlobalConfig = {
       type: "array",
       fields: [
         { name: "label", type: "text", required: true },
-        { name: "url", type: "text", required: true },
+        // Empty URL = a group heading whose children hold the links
+        { name: "url", type: "text" },
         {
           name: "audience",
           type: "select",

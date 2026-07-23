@@ -11,8 +11,8 @@ import { isMalformedPostcode } from "@/lib/crm/postcode";
 import { formatMinutes } from "@/lib/crm/speed-to-lead";
 import { allowedNextStages } from "@/lib/crm/stages";
 import { canReassign } from "@/lib/roles";
-import { requireUser } from "@/lib/session";
 import { getCoreData, getLookupData } from "@/lib/sheets";
+import { requireEffectiveUser } from "@/lib/view-as";
 
 export const metadata: Metadata = { title: "Lead" };
 export const dynamic = "force-dynamic";
@@ -45,7 +45,7 @@ export default async function LeadDetailPage({
   params: Promise<{ uniqueId: string }>;
 }) {
   const { uniqueId } = await params;
-  const user = await requireUser();
+  const { effective: user, viewingAs } = await requireEffectiveUser();
   const core = await getCoreData();
 
   const lead = core.leads.find((l) => l.uniqueId === uniqueId);
@@ -122,6 +122,15 @@ export default async function LeadDetailPage({
         </section>
       ) : null}
 
+      {viewingAs ? (
+        <section className="rounded-card border border-my-line bg-my-paper p-5 shadow-card">
+          <p className="text-sm text-my-slate">
+            Read-only while viewing as {viewingAs.name} — stage changes,
+            notes and edits are disabled. Exit view-as (banner above) to
+            make changes as yourself.
+          </p>
+        </section>
+      ) : (
       <LeadEditor
         key={lead.uniqueId}
         uniqueId={lead.uniqueId}
@@ -141,6 +150,7 @@ export default async function LeadDetailPage({
         currentAgentEmail={lead.agentEmail}
         canReassignLead={managerCanReassign}
       />
+      )}
 
       <section className="rounded-card border border-my-line bg-my-surface p-5 shadow-card">
         <h2 className="text-h3">Record</h2>

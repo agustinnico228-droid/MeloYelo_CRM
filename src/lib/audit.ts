@@ -16,7 +16,7 @@ import path from "node:path";
 export interface AuditEntry {
   timestamp: string;
   actorEmail: string;
-  action: "updateLead" | "addLead" | "reassign";
+  action: "updateLead" | "addLead" | "reassign" | "viewAs";
   uniqueId: string;
   field: string;
   oldValue: string;

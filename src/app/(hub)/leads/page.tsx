@@ -8,8 +8,8 @@ import { visibleLeads } from "@/lib/crm/access";
 import { filterAndSortLeads, type LeadSort } from "@/lib/crm/filter";
 import { STAGES } from "@/lib/crm/types";
 import { canSeeAllLeads } from "@/lib/roles";
-import { requireUser } from "@/lib/session";
 import { getCoreData, getLookupData } from "@/lib/sheets";
+import { requireEffectiveUser } from "@/lib/view-as";
 
 export const metadata: Metadata = { title: "Leads" };
 export const dynamic = "force-dynamic";
@@ -56,7 +56,7 @@ export default async function LeadsPage({
   searchParams: Promise<Params>;
 }) {
   const params = await searchParams;
-  const user = await requireUser();
+  const { effective: user } = await requireEffectiveUser();
   const [core, lookups] = await Promise.all([getCoreData(), getLookupData()]);
 
   const seesAll = user.role !== null && canSeeAllLeads(user.role);

@@ -70,6 +70,8 @@ export interface Config {
     users: User;
     media: Media;
     pages: Page;
+    dashboards: Dashboard;
+    campaigns: Campaign;
     guides: Guide;
     knownIssues: KnownIssue;
     announcements: Announcement;
@@ -85,6 +87,8 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    dashboards: DashboardsSelect<false> | DashboardsSelect<true>;
+    campaigns: CampaignsSelect<false> | CampaignsSelect<true>;
     guides: GuidesSelect<false> | GuidesSelect<true>;
     knownIssues: KnownIssuesSelect<false> | KnownIssuesSelect<true>;
     announcements: AnnouncementsSelect<false> | AnnouncementsSelect<true>;
@@ -214,6 +218,9 @@ export interface Page {
   id: number;
   title: string;
   slug: string;
+  section: 'top' | 'crm' | 'growth' | 'campaigns' | 'resources';
+  showToc?: boolean | null;
+  lastReviewed?: string | null;
   layout?:
     | (
         | {
@@ -322,6 +329,63 @@ export interface Page {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dashboards".
+ */
+export interface Dashboard {
+  id: number;
+  _order?: string | null;
+  title: string;
+  slug: string;
+  description?: string | null;
+  lookerReportId?: string | null;
+  lookerPageId?: string | null;
+  audience: 'all' | 'agents' | 'managers';
+  lastReviewed?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "campaigns".
+ */
+export interface Campaign {
+  id: number;
+  _order?: string | null;
+  title: string;
+  slug: string;
+  code?: string | null;
+  status: 'planned' | 'live' | 'ended';
+  startsAt?: string | null;
+  endsAt?: string | null;
+  offer?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  landingPageUrl?: string | null;
+  utmCampaign?: string | null;
+  reportLinks?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -474,6 +538,14 @@ export interface PayloadLockedDocument {
         value: number | Page;
       } | null)
     | ({
+        relationTo: 'dashboards';
+        value: number | Dashboard;
+      } | null)
+    | ({
+        relationTo: 'campaigns';
+        value: number | Campaign;
+      } | null)
+    | ({
         relationTo: 'guides';
         value: number | Guide;
       } | null)
@@ -617,6 +689,9 @@ export interface MediaSelect<T extends boolean = true> {
 export interface PagesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
+  section?: T;
+  showToc?: T;
+  lastReviewed?: T;
   layout?:
     | T
     | {
@@ -690,6 +765,47 @@ export interface PagesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dashboards_select".
+ */
+export interface DashboardsSelect<T extends boolean = true> {
+  _order?: T;
+  title?: T;
+  slug?: T;
+  description?: T;
+  lookerReportId?: T;
+  lookerPageId?: T;
+  audience?: T;
+  lastReviewed?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "campaigns_select".
+ */
+export interface CampaignsSelect<T extends boolean = true> {
+  _order?: T;
+  title?: T;
+  slug?: T;
+  code?: T;
+  status?: T;
+  startsAt?: T;
+  endsAt?: T;
+  offer?: T;
+  landingPageUrl?: T;
+  utmCampaign?: T;
+  reportLinks?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -821,7 +937,7 @@ export interface Navigation {
   items?:
     | {
         label: string;
-        url: string;
+        url?: string | null;
         audience: 'all' | 'agents' | 'managers';
         children?:
           | {
