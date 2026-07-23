@@ -20,8 +20,11 @@ existing rails. That's a feature.
 | **Pipeline** (`/pipeline`) | Nine-stage board (read-only in v1) |
 | **Dashboards** (`/dashboards`) | Looker Studio embedded, role-gated |
 | **Guides / Known issues** | Written in the admin, no developer needed |
-| **System** (`/system`) | Managers' "where is everything" page: intake, Zapier, Apps Script, data health |
-| **Admin** (`/admin`) | Payload CMS — pages, guides, announcements, media, navigation, audit log |
+| **Ride Guide queue** (`/ride-guide/queue`) | Emma's calling list: website leads only, guided call flow with one-tap outcomes |
+| **View as agent** (`/view-as`) | Managers see exactly what an agent sees — read-only, banner always visible, audited |
+| **Content pages** (`/news`, `/conference`, `/campaigns`, `/growth/…`) | The whole intranet, ported into the CMS and editable without a developer |
+| **System** (`/system`) | Managers' "where is everything" page: intake, Zapier, Apps Script, data health, pending unsubscribes |
+| **Admin** (`/admin`) | Payload CMS — pages, guides, dashboards, campaigns, announcements, media, navigation, audit log |
 
 ## Running it on your machine
 

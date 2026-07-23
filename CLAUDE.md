@@ -15,8 +15,10 @@ prototype is preserved on the `archive/vite-prototype` branch.
 - `npm run build` — production build via webpack (also the type-check
   gate; Payload does not support Turbopack builds on Next 15)
 - `npm test` — Vitest unit tests over the domain logic in `src/lib/crm/`
-- `npm run seed` — starter CMS content + first admin user (needs
-  `DATABASE_URI`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`)
+- `npm run seed` — full intranet content port + first admin user (needs
+  `DATABASE_URI`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`); idempotent
+- `npm run parity` — pre-cutover check that every intranet page exists
+  in the CMS and lists stubs still needing content (needs `DATABASE_URI`)
 
 Never run `npm run build` while the dev server is running — both write
 to `.next/` and the dev server corrupts.
