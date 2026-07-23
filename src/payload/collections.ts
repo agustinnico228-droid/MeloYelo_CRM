@@ -119,19 +119,36 @@ export const Campaigns: CollectionConfig = {
   fields: [
     { name: "title", type: "text", required: true },
     { name: "slug", type: "text", required: true, unique: true },
+    // §17 C1 key rule: utm_campaign must EXACTLY match this code
     { name: "code", type: "text" },
     {
       name: "status",
       type: "select",
       defaultValue: "planned",
-      options: ["planned", "live", "ended"],
+      options: ["planned", "live", "paused", "ended"],
       required: true,
+    },
+    // Shown on /campaigns when paused ("paused with the reason visible")
+    { name: "statusNote", type: "text" },
+    {
+      name: "channel",
+      type: "select",
+      options: ["google-ads", "meta", "print", "email", "multi"],
     },
     { name: "startsAt", type: "date" },
     { name: "endsAt", type: "date" },
-    { name: "offer", type: "richText" },
+    { name: "budget", type: "number" },
+    { name: "snapshot", type: "richText" },
     { name: "landingPageUrl", type: "text" },
+    // Defaults to code — chosen, not typed, in the UTM builder
     { name: "utmCampaign", type: "text" },
+    {
+      name: "assets",
+      type: "array",
+      fields: [
+        { name: "file", type: "upload", relationTo: "media", required: true },
+      ],
+    },
     {
       name: "reportLinks",
       type: "array",

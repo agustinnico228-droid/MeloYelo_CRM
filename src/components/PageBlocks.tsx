@@ -89,18 +89,27 @@ export default function PageBlocks({ blocks }: { blocks: Block[] }) {
               </div>
             );
           case "embed":
+            // §17 Part D: an embed is never the only affordance — the
+            // source stays reachable even if the iframe fails to load.
             return (
-              <div
-                key={i}
-                className="overflow-hidden rounded-card border border-my-line"
-              >
-                <iframe
-                  src={block.url}
-                  title={block.title ?? "Embedded content"}
-                  className="aspect-video w-full"
-                  loading="lazy"
-                  allowFullScreen
-                />
+              <div key={i}>
+                <div className="overflow-hidden rounded-card border border-my-line">
+                  <iframe
+                    src={block.url}
+                    title={block.title ?? "Embedded content"}
+                    className="aspect-video w-full"
+                    loading="lazy"
+                    allowFullScreen
+                  />
+                </div>
+                <a
+                  href={block.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex min-h-12 items-center rounded-control border border-my-line bg-my-surface px-4 text-sm font-medium transition-colors hover:bg-my-paper"
+                >
+                  Open the source document ↗
+                </a>
               </div>
             );
           case "accordion":

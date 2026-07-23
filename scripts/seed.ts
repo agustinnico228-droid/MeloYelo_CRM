@@ -136,8 +136,14 @@ async function seedCampaigns(payload: Payload) {
         slug: c.slug,
         code: c.code,
         status: c.status,
+        statusNote: c.statusNote,
+        channel: c.channel,
+        startsAt: c.startsAt,
+        budget: c.budget,
+        // utm_campaign defaults to the code — the exact-match key rule
+        utmCampaign: c.code,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        offer: c.offer as any,
+        snapshot: c.snapshot as any,
       },
     });
     console.log(`campaign: ${c.slug}`);

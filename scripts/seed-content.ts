@@ -361,8 +361,32 @@ export const SEED_PAGES: SeedPage[] = [
     title: "Campaign Naming & UTM Convention",
     slug: "growth/utm-convention",
     section: "growth",
-    grounded: false,
-    blocks: [callout("info", STUB)],
+    grounded: true,
+    blocks: [
+      rt(
+        doc(
+          h2("The convention"),
+          ul(
+            "Campaign naming format: YYMM-shortname (example: 2604-fuel-crisis)",
+            "Minimum UTMs on every tagged link: utm_source, utm_medium, utm_campaign",
+            "Values are lowercase and hyphen-separated — no spaces",
+          ),
+          p(
+            bold("The key rule: "),
+            text(
+              "utm_campaign must EXACTLY match the official campaign name. A typo splits the campaign's reporting in two, silently.",
+            ),
+          ),
+          p(
+            "Use the builder below this page — it picks utm_campaign from the live campaign list so it can't be mistyped, and corrects formatting as you type.",
+          ),
+          h2("A/B variants"),
+          p(
+            "Variants of one campaign are distinguished by utm_content (for example no-incentive vs incentive), never by inventing a second campaign name — that keeps them comparable under one utm_campaign while remaining separate ad-platform campaigns for budget control.",
+          ),
+        ),
+      ),
+    ],
   },
   {
     title: "Resources",
@@ -576,39 +600,74 @@ export interface SeedCampaign {
   title: string;
   slug: string;
   code: string;
-  status: "planned" | "live" | "ended";
-  offer: RichTextDoc;
+  status: "planned" | "live" | "paused" | "ended";
+  statusNote?: string;
+  channel?: "google-ads" | "meta" | "print" | "email" | "multi";
+  startsAt?: string;
+  budget?: number;
+  snapshot: RichTextDoc;
 }
 
 const CAMPAIGN_STUB = doc(
   p(
-    bold("Offer details to be added. "),
+    bold("Snapshot to be added. "),
     text(
-      "The campaign exists on the intranet but its offer copy wasn't in the export — an admin can paste it here.",
+      "The campaign exists on the intranet but its snapshot copy wasn't in the export — an admin can paste it here.",
     ),
   ),
 );
 
+/** The four real campaigns from the intranet (Phase 17 C2). */
 export const SEED_CAMPAIGNS: SeedCampaign[] = [
   {
     title: "SuperGold Card",
     slug: "supergold-card",
     code: "supergold-card",
     status: "live",
-    offer: CAMPAIGN_STUB,
+    statusNote:
+      "Offer listed as expiring 18 June 2026 — check with Greg whether it has lapsed.",
+    snapshot: doc(
+      p("$500 off SuperLite and SuperTrail for SuperGold Card holders."),
+      p(bold("Expiry on the intranet: 18 June 2026.")),
+    ),
   },
   {
     title: "2604 Fuel Crisis",
     slug: "2604-fuel-crisis",
     code: "2604-fuel-crisis",
-    status: "live",
-    offer: CAMPAIGN_STUB,
+    status: "paused",
+    statusNote:
+      "Paused 28 May awaiting finance options (Qcard, FinanceNow).",
+    channel: "google-ads",
+    startsAt: "2026-04-24",
+    budget: 6000,
+    snapshot: doc(
+      p(
+        "Google Ads only. Started Friday 24 April 2026, planned to run 60 days with a $6,000 budget.",
+      ),
+      p("Paused 28 May awaiting finance options (Qcard, FinanceNow)."),
+    ),
   },
   {
     title: "2606 Supertrail Champagne",
     slug: "2606-supertrail-champagne",
     code: "2606-supertrail-champagne",
     status: "live",
-    offer: CAMPAIGN_STUB,
+    snapshot: CAMPAIGN_STUB,
+  },
+  {
+    title: "2607 Find Your Perfect E-Bike",
+    slug: "2607-find-your-perfect-e-bike",
+    code: "2607-find-your-perfect-e-bike",
+    status: "planned",
+    channel: "meta",
+    snapshot: doc(
+      p(
+        bold("The quiz pilot campaign. "),
+        text(
+          "The campaign name already exists in the Drive folder. For the Meta A/B test, version A and B are distinguished by utm_content (no-incentive / incentive) — never by inventing two campaign names — so both variants stay comparable under this one utm_campaign while remaining separate Meta campaigns for budget control.",
+        ),
+      ),
+    ),
   },
 ];

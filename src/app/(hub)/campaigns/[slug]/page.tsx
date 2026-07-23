@@ -45,18 +45,28 @@ export default async function CampaignPage({
         <p className="mt-2 text-sm text-my-slate">
           {[
             campaign.code,
+            campaign.channel ? campaign.channel.replace("-", " ") : null,
             starts && ends
               ? `${starts} – ${ends}`
               : (starts ?? (ends ? `until ${ends}` : null)),
+            typeof campaign.budget === "number"
+              ? `budget $${campaign.budget.toLocaleString("en-NZ")}`
+              : null,
             campaign.utmCampaign ? `UTM: ${campaign.utmCampaign}` : null,
           ]
             .filter(Boolean)
             .join(" · ")}
         </p>
 
-        {campaign.offer ? (
+        {campaign.statusNote ? (
+          <p className="mt-4 rounded-control border border-my-warn/40 bg-my-warn/10 px-4 py-3 text-sm">
+            {campaign.statusNote}
+          </p>
+        ) : null}
+
+        {campaign.snapshot ? (
           <div className="rich-text mt-6">
-            <RichText data={campaign.offer} />
+            <RichText data={campaign.snapshot} />
           </div>
         ) : null}
 

@@ -357,10 +357,13 @@ export interface Campaign {
   title: string;
   slug: string;
   code?: string | null;
-  status: 'planned' | 'live' | 'ended';
+  status: 'planned' | 'live' | 'paused' | 'ended';
+  statusNote?: string | null;
+  channel?: ('google-ads' | 'meta' | 'print' | 'email' | 'multi') | null;
   startsAt?: string | null;
   endsAt?: string | null;
-  offer?: {
+  budget?: number | null;
+  snapshot?: {
     root: {
       type: string;
       children: {
@@ -377,6 +380,12 @@ export interface Campaign {
   } | null;
   landingPageUrl?: string | null;
   utmCampaign?: string | null;
+  assets?:
+    | {
+        file: number | Media;
+        id?: string | null;
+      }[]
+    | null;
   reportLinks?:
     | {
         label: string;
@@ -792,11 +801,20 @@ export interface CampaignsSelect<T extends boolean = true> {
   slug?: T;
   code?: T;
   status?: T;
+  statusNote?: T;
+  channel?: T;
   startsAt?: T;
   endsAt?: T;
-  offer?: T;
+  budget?: T;
+  snapshot?: T;
   landingPageUrl?: T;
   utmCampaign?: T;
+  assets?:
+    | T
+    | {
+        file?: T;
+        id?: T;
+      };
   reportLinks?:
     | T
     | {

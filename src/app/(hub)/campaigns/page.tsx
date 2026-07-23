@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 const STATUS_CLASSES: Record<string, string> = {
   live: "border-my-green/40 bg-my-green/10",
   planned: "border-my-line bg-my-paper",
+  paused: "border-my-warn/40 bg-my-warn/10",
   ended: "border-my-line bg-my-paper text-my-slate",
 };
 
@@ -32,6 +33,11 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
           {campaign.code}
         </span>
       ) : null}
+      {campaign.status === "paused" && campaign.statusNote ? (
+        <span className="mt-2 block rounded-control border border-my-warn/40 bg-my-warn/10 px-3 py-2 text-sm">
+          {campaign.statusNote}
+        </span>
+      ) : null}
     </Link>
   );
 }
@@ -41,6 +47,7 @@ export default async function CampaignsPage() {
   const campaigns = await getCampaigns();
 
   const live = campaigns.filter((c) => c.status === "live");
+  const paused = campaigns.filter((c) => c.status === "paused");
   const planned = campaigns.filter((c) => c.status === "planned");
   const ended = campaigns.filter((c) => c.status === "ended");
 
@@ -59,7 +66,7 @@ export default async function CampaignsPage() {
         </div>
       ) : (
         <>
-          {[...live, ...planned].map((c) => (
+          {[...live, ...paused, ...planned].map((c) => (
             <CampaignCard key={c.id} campaign={c} />
           ))}
           {ended.length > 0 ? (

@@ -11,7 +11,10 @@ export const isAuthConfigured = Boolean(
   process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET,
 );
 
-export const allowedDomain = process.env.AUTH_ALLOWED_DOMAIN ?? "meloyelo.nz";
+export const allowedDomain =
+  process.env.AUTH_ALLOWED_DOMAIN ??
+  process.env.ALLOWED_EMAIL_DOMAIN ?? // Phase 17 E3 alias
+  "meloyelo.nz";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret:

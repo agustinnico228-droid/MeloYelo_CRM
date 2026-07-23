@@ -9,7 +9,10 @@ import { JWT } from "google-auth-library";
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"];
 
 export function spreadsheetId(): string {
-  return process.env.SHEETS_SPREADSHEET_ID ?? "";
+  // CRM_SPREADSHEET_ID is the Phase 17 E3 alias
+  return (
+    process.env.SHEETS_SPREADSHEET_ID ?? process.env.CRM_SPREADSHEET_ID ?? ""
+  );
 }
 
 interface ServiceAccount {
@@ -19,14 +22,21 @@ interface ServiceAccount {
 
 function serviceAccount(): ServiceAccount | null {
   const b64 = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_BASE64;
-  if (!b64) return null;
-  try {
-    const json = JSON.parse(Buffer.from(b64, "base64").toString("utf8"));
-    if (json.client_email && json.private_key) return json;
-    return null;
-  } catch {
-    return null;
+  if (b64) {
+    try {
+      const json = JSON.parse(Buffer.from(b64, "base64").toString("utf8"));
+      if (json.client_email && json.private_key) return json;
+    } catch {
+      return null;
+    }
   }
+  // Phase 17 E3 alias: raw private key with escaped newlines + email
+  const rawKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  if (rawKey && email) {
+    return { client_email: email, private_key: rawKey.replace(/\\n/g, "\n") };
+  }
+  return null;
 }
 
 export function isSheetsConfigured(): boolean {
