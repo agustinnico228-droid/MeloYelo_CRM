@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import type {
   Announcement,
   Campaign,
@@ -14,7 +15,21 @@ import type { Role } from "./roles";
  * Read-side access to Payload content. Every call degrades gracefully:
  * no DATABASE_URI (or a down database) means empty content, never a
  * broken page — the CRM works without the CMS.
+ *
+ * Reads are served from the Next data cache: the tags line up with the
+ * publish-time hooks in src/payload/revalidate.ts, so an editor's save
+ * appears instantly while ordinary page views cost zero database
+ * round-trips (the database is a ~300ms round trip from NZ). The TTL is
+ * only a safety net. Draft reads (admin live preview) bypass the cache.
  */
+
+const cmsCache = <A extends unknown[], R>(
+  key: string,
+  tags: string[],
+  revalidate: number,
+  fn: (...args: A) => Promise<R>,
+): ((...args: A) => Promise<R>) =>
+  unstable_cache(fn, [key], { tags, revalidate });
 
 export function isCmsConfigured(): boolean {
   return Boolean(process.env.DATABASE_URI);
@@ -28,11 +43,12 @@ async function payloadClient() {
 
 /** Content audiences a hub role may see. */
 function audiencesFor(role: Role | null): string[] {
-  if (role === "manager" || role === "admin") return ["all", "managers", "agents"];
+  if (role === "manager" || role === "admin")
+    return ["all", "managers", "agents"];
   return ["all", "agents"];
 }
 
-export async function getActiveAnnouncements(
+async function fetchActiveAnnouncements(
   role: Role | null,
 ): Promise<Announcement[]> {
   if (!isCmsConfigured()) return [];
@@ -68,7 +84,14 @@ export async function getActiveAnnouncements(
   }
 }
 
-export async function getGuides(role: Role | null): Promise<Guide[]> {
+export const getActiveAnnouncements = cmsCache(
+  "announcements",
+  ["cms:announcements"],
+  60,
+  fetchActiveAnnouncements,
+);
+
+async function fetchGuides(role: Role | null): Promise<Guide[]> {
   if (!isCmsConfigured()) return [];
   try {
     const payload = await payloadClient();
@@ -84,18 +107,27 @@ export async function getGuides(role: Role | null): Promise<Guide[]> {
   }
 }
 
-export async function getGuide(
+export const getGuides = cmsCache("guides", ["cms:guides"], 60, fetchGuides);
+
+async function fetchGuide(
   slug: string,
   role: Role | null,
+  opts: { draft?: boolean } = {},
 ): Promise<Guide | null> {
   if (!isCmsConfigured()) return null;
   try {
     const payload = await payloadClient();
     const res = await payload.find({
       collection: "guides",
-      where: {
-        and: [{ slug: { equals: slug } }, { _status: { equals: "published" } }],
-      },
+      where: opts.draft
+        ? { slug: { equals: slug } }
+        : {
+            and: [
+              { slug: { equals: slug } },
+              { _status: { equals: "published" } },
+            ],
+          },
+      draft: opts.draft ?? false,
       limit: 1,
     });
     const guide = res.docs[0] ?? null;
@@ -106,7 +138,24 @@ export async function getGuide(
   }
 }
 
-export async function getKnownIssues(): Promise<KnownIssue[]> {
+const cachedGuide = cmsCache(
+  "guide",
+  ["cms:guides"],
+  60,
+  (slug: string, role: Role | null) => fetchGuide(slug, role),
+);
+
+export async function getGuide(
+  slug: string,
+  role: Role | null,
+  opts: { draft?: boolean } = {},
+): Promise<Guide | null> {
+  return opts.draft
+    ? fetchGuide(slug, role, { draft: true })
+    : cachedGuide(slug, role);
+}
+
+async function fetchKnownIssues(): Promise<KnownIssue[]> {
   if (!isCmsConfigured()) return [];
   try {
     const payload = await payloadClient();
@@ -117,7 +166,14 @@ export async function getKnownIssues(): Promise<KnownIssue[]> {
   }
 }
 
-export async function getOpenKnownIssueCount(): Promise<number> {
+export const getKnownIssues = cmsCache(
+  "known-issues",
+  ["cms:knownIssues"],
+  60,
+  fetchKnownIssues,
+);
+
+async function fetchOpenKnownIssueCount(): Promise<number> {
   if (!isCmsConfigured()) return 0;
   try {
     const payload = await payloadClient();
@@ -131,8 +187,15 @@ export async function getOpenKnownIssueCount(): Promise<number> {
   }
 }
 
+export const getOpenKnownIssueCount = cmsCache(
+  "known-issue-count",
+  ["cms:knownIssues"],
+  60,
+  fetchOpenKnownIssueCount,
+);
+
 /** Nav tree: CMS global when populated, intranet-mirroring fallback otherwise. */
-export async function getNavigation(role: Role | null): Promise<NavNode[]> {
+async function fetchNavigation(role: Role | null): Promise<NavNode[]> {
   const allowed = navAudiencesFor(role);
   if (!isCmsConfigured()) return filterNav(DEFAULT_NAV, allowed);
   try {
@@ -156,16 +219,36 @@ export async function getNavigation(role: Role | null): Promise<NavNode[]> {
   }
 }
 
-/** Resolve a published content page by its full path slug (§13.2). */
-export async function getPageBySlug(path: string): Promise<Page | null> {
+export const getNavigation = cmsCache(
+  "navigation",
+  ["cms:navigation"],
+  300,
+  fetchNavigation,
+);
+
+/**
+ * Resolve a content page by its full path slug (§13.2). Pass
+ * `{ draft: true }` (admin live preview only) to see the newest
+ * autosaved draft instead of the published version.
+ */
+async function fetchPageBySlug(
+  path: string,
+  opts: { draft?: boolean } = {},
+): Promise<Page | null> {
   if (!isCmsConfigured()) return null;
   try {
     const payload = await payloadClient();
     const res = await payload.find({
       collection: "pages",
-      where: {
-        and: [{ slug: { equals: path } }, { _status: { equals: "published" } }],
-      },
+      where: opts.draft
+        ? { slug: { equals: path } }
+        : {
+            and: [
+              { slug: { equals: path } },
+              { _status: { equals: "published" } },
+            ],
+          },
+      draft: opts.draft ?? false,
       limit: 1,
     });
     return res.docs[0] ?? null;
@@ -174,7 +257,23 @@ export async function getPageBySlug(path: string): Promise<Page | null> {
   }
 }
 
-export async function getDashboards(role: Role | null): Promise<Dashboard[]> {
+const cachedPageBySlug = cmsCache(
+  "page-by-slug",
+  ["cms:pages"],
+  60,
+  (path: string) => fetchPageBySlug(path),
+);
+
+export async function getPageBySlug(
+  path: string,
+  opts: { draft?: boolean } = {},
+): Promise<Page | null> {
+  return opts.draft
+    ? fetchPageBySlug(path, { draft: true })
+    : cachedPageBySlug(path);
+}
+
+async function fetchDashboards(role: Role | null): Promise<Dashboard[]> {
   if (!isCmsConfigured()) return [];
   try {
     const payload = await payloadClient();
@@ -186,7 +285,14 @@ export async function getDashboards(role: Role | null): Promise<Dashboard[]> {
   }
 }
 
-export async function getDashboard(
+export const getDashboards = cmsCache(
+  "dashboards",
+  ["cms:dashboards"],
+  300,
+  fetchDashboards,
+);
+
+async function fetchDashboard(
   slug: string,
   role: Role | null,
 ): Promise<Dashboard | null> {
@@ -206,7 +312,14 @@ export async function getDashboard(
   }
 }
 
-export async function getCampaigns(): Promise<Campaign[]> {
+export const getDashboard = cmsCache(
+  "dashboard",
+  ["cms:dashboards"],
+  300,
+  fetchDashboard,
+);
+
+async function fetchCampaigns(): Promise<Campaign[]> {
   if (!isCmsConfigured()) return [];
   try {
     const payload = await payloadClient();
@@ -217,7 +330,14 @@ export async function getCampaigns(): Promise<Campaign[]> {
   }
 }
 
-export async function getCampaign(slug: string): Promise<Campaign | null> {
+export const getCampaigns = cmsCache(
+  "campaigns",
+  ["cms:campaigns"],
+  60,
+  fetchCampaigns,
+);
+
+async function fetchCampaign(slug: string): Promise<Campaign | null> {
   if (!isCmsConfigured()) return null;
   try {
     const payload = await payloadClient();
@@ -232,6 +352,13 @@ export async function getCampaign(slug: string): Promise<Campaign | null> {
   }
 }
 
+export const getCampaign = cmsCache(
+  "campaign",
+  ["cms:campaigns"],
+  60,
+  fetchCampaign,
+);
+
 export interface LookerUrls {
   agent: string;
   manager: string;
@@ -239,7 +366,7 @@ export interface LookerUrls {
 }
 
 /** Looker embed URLs: Settings global first, env fallback (§11). */
-export async function getLookerUrls(): Promise<LookerUrls> {
+async function fetchLookerUrls(): Promise<LookerUrls> {
   const fromEnv: LookerUrls = {
     agent: process.env.LOOKER_AGENT_REPORT_URL ?? "",
     manager: process.env.LOOKER_MANAGER_REPORT_URL ?? "",
@@ -259,7 +386,14 @@ export async function getLookerUrls(): Promise<LookerUrls> {
   }
 }
 
-export async function getQuickLinks(role: Role | null) {
+export const getLookerUrls = cmsCache(
+  "looker-urls",
+  ["cms:settings"],
+  300,
+  fetchLookerUrls,
+);
+
+async function fetchQuickLinks(role: Role | null) {
   if (!isCmsConfigured()) return [];
   try {
     const payload = await payloadClient();
@@ -270,6 +404,13 @@ export async function getQuickLinks(role: Role | null) {
     return [];
   }
 }
+
+export const getQuickLinks = cmsCache(
+  "quick-links",
+  ["cms:quickLinks"],
+  300,
+  fetchQuickLinks,
+);
 
 /** Server-side audit sink (§10.5). Throws on failure so callers can fall back. */
 export async function createAuditEntry(data: {

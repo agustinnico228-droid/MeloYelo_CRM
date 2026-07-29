@@ -220,6 +220,7 @@ export interface Page {
   slug: string;
   section: 'top' | 'crm' | 'growth' | 'campaigns' | 'resources';
   showToc?: boolean | null;
+  audience: 'all' | 'agents' | 'managers';
   lastReviewed?: string | null;
   layout?:
     | (
@@ -700,6 +701,7 @@ export interface PagesSelect<T extends boolean = true> {
   slug?: T;
   section?: T;
   showToc?: T;
+  audience?: T;
   lastReviewed?: T;
   layout?:
     | T

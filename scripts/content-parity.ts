@@ -36,13 +36,24 @@ async function main() {
       problems.push(`UNPUBLISHED guide: /guides/${expected.slug}`);
   }
 
-  const dashboards = await payload.find({ collection: "dashboards", limit: 100 });
+  // Dashboards with a native Hub replacement don't need a Looker ID —
+  // /dashboards/manager has been native since Phase 17.
+  const NATIVE_BACKED = new Set(["manager"]);
+
+  const dashboards = await payload.find({
+    collection: "dashboards",
+    limit: 100,
+  });
   for (const expected of SEED_DASHBOARDS) {
     const doc = dashboards.docs.find((d) => d.slug === expected.slug);
     if (!doc) problems.push(`MISSING dashboard: /dashboards/${expected.slug}`);
-    else if (!doc.lookerReportId)
+    else if (!doc.lookerReportId && !NATIVE_BACKED.has(expected.slug))
       problems.push(
         `NOT CONNECTED dashboard: /dashboards/${expected.slug} (no Looker report ID yet)`,
+      );
+    else if (!doc.lookerReportId)
+      console.log(
+        `native-backed (Looker ID optional): /dashboards/${expected.slug}`,
       );
   }
 
@@ -79,7 +90,11 @@ async function main() {
   process.exit(1);
 }
 
-main().catch((err) => {
+// Top-level await, not a floating promise — `payload run` exits as soon as
+// module evaluation finishes, which would kill the check before it runs.
+try {
+  await main();
+} catch (err) {
   console.error(err);
   process.exit(1);
-});
+}

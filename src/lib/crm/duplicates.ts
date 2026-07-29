@@ -45,12 +45,10 @@ export function findLikelyDuplicates(leads: Lead[]): DuplicateGroup[] {
 
   collect("email", (l) => l.email.trim().toLowerCase());
   collect("phone", (l) => phoneKey(l.phone));
-  collect(
-    "name",
-    (l) =>
-      l.firstName && l.lastName
-        ? `${l.firstName} ${l.lastName}`.trim().toLowerCase()
-        : "",
+  collect("name", (l) =>
+    l.firstName && l.lastName
+      ? `${l.firstName} ${l.lastName}`.trim().toLowerCase()
+      : "",
   );
 
   return groups;

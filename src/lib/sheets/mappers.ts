@@ -43,9 +43,10 @@ export function normalizeHeader(h: string): string {
 }
 
 /** Turn a raw tab (header row + data rows) into keyed records. */
-export function rowsToRecords(
-  rows: string[][],
-): { headers: string[]; records: Record<string, string>[] } {
+export function rowsToRecords(rows: string[][]): {
+  headers: string[];
+  records: Record<string, string>[];
+} {
   if (rows.length === 0) return { headers: [], records: [] };
   const headers = rows[0].map((h) => (h ?? "").trim());
   const records = rows.slice(1).map((row) => {

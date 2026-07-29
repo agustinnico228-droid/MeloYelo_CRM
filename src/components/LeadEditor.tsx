@@ -43,7 +43,11 @@ function StatusLine({ status }: { status: Status }) {
   );
 }
 
-const FIELD_LABELS: { key: keyof EditableFields; label: string; type?: string }[] = [
+const FIELD_LABELS: {
+  key: keyof EditableFields;
+  label: string;
+  type?: string;
+}[] = [
   { key: "firstName", label: "First name" },
   { key: "lastName", label: "Last name" },
   { key: "email", label: "Email", type: "email" },
@@ -80,7 +84,7 @@ export default function LeadEditor({
 
   function saveStage() {
     if (stageValue === stage) return;
-    setStageStatus({ kind: "saving", text: "Saving stage…" });
+    setStageStatus({ kind: "saving", text: "Saving stage..." });
     startTransition(async () => {
       const res = await saveLeadChanges({ uniqueId, stageTo: stageValue });
       if (res.ok) {
@@ -88,7 +92,10 @@ export default function LeadEditor({
         router.refresh();
       } else {
         setStageValue(stage); // rollback
-        setStageStatus({ kind: "error", text: res.error ?? "The stage didn't save." });
+        setStageStatus({
+          kind: "error",
+          text: res.error ?? "The stage didn't save.",
+        });
       }
     });
   }
@@ -100,7 +107,7 @@ export default function LeadEditor({
   function saveNote() {
     const text = note.trim();
     if (text === "") return;
-    setNoteStatus({ kind: "saving", text: "Saving note…" });
+    setNoteStatus({ kind: "saving", text: "Saving note..." });
     startTransition(async () => {
       const res = await saveLeadChanges({ uniqueId, noteText: text });
       if (res.ok) {
@@ -108,7 +115,10 @@ export default function LeadEditor({
         setNoteStatus({ kind: "saved", text: "Note saved." });
         router.refresh();
       } else {
-        setNoteStatus({ kind: "error", text: res.error ?? "The note didn't save." });
+        setNoteStatus({
+          kind: "error",
+          text: res.error ?? "The note didn't save.",
+        });
       }
     });
   }
@@ -127,7 +137,7 @@ export default function LeadEditor({
         if (next[key] !== lastSaved.current[key]) changes[key] = next[key];
       }
       if (Object.keys(changes).length === 0) return;
-      setFieldStatus({ kind: "saving", text: "Saving…" });
+      setFieldStatus({ kind: "saving", text: "Saving..." });
       startTransition(async () => {
         const res = await saveLeadChanges({ uniqueId, changes });
         if (res.ok) {
@@ -136,7 +146,10 @@ export default function LeadEditor({
           router.refresh();
         } else {
           setValues(lastSaved.current); // rollback
-          setFieldStatus({ kind: "error", text: res.error ?? "The change didn't save." });
+          setFieldStatus({
+            kind: "error",
+            text: res.error ?? "The change didn't save.",
+          });
         }
       });
     }, 800);
@@ -151,11 +164,13 @@ export default function LeadEditor({
   // ── Reassign (managers) ──────────────────────────────────────────────
   const [agentValue, setAgentValue] = useState(currentAgentEmail);
   const [reason, setReason] = useState("");
-  const [reassignStatus, setReassignStatus] = useState<Status>({ kind: "idle" });
+  const [reassignStatus, setReassignStatus] = useState<Status>({
+    kind: "idle",
+  });
 
   function doReassign() {
     if (!agentValue || agentValue === currentAgentEmail) return;
-    setReassignStatus({ kind: "saving", text: "Reassigning…" });
+    setReassignStatus({ kind: "saving", text: "Reassigning..." });
     startTransition(async () => {
       const res = await reassignLead({
         uniqueId,
@@ -168,7 +183,10 @@ export default function LeadEditor({
         router.refresh();
       } else {
         setAgentValue(currentAgentEmail); // rollback
-        setReassignStatus({ kind: "error", text: res.error ?? "The reassignment didn't save." });
+        setReassignStatus({
+          kind: "error",
+          text: res.error ?? "The reassignment didn't save.",
+        });
       }
     });
   }
@@ -197,13 +215,13 @@ export default function LeadEditor({
             type="button"
             onClick={saveStage}
             disabled={stageValue === stage || stageStatus.kind === "saving"}
-            className="min-h-12 rounded-control bg-my-yellow px-6 font-bold text-my-ink transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            className="btn-brand disabled:cursor-not-allowed disabled:opacity-40"
           >
             Save stage
           </button>
         </div>
         <p className="mt-2 text-sm text-my-slate">
-          Stages only move forward — earlier stages aren&apos;t offered.
+          Stages only move forward. Earlier stages aren&apos;t offered.
         </p>
         <StatusLine status={stageStatus} />
       </section>
@@ -262,7 +280,7 @@ export default function LeadEditor({
               aria-label="Reassign to agent"
               className={inputCls}
             >
-              <option value="">Choose an agent…</option>
+              <option value="">Choose an agent...</option>
               {agents.map((a) => (
                 <option key={a.email} value={a.email}>
                   {a.name}
@@ -285,7 +303,7 @@ export default function LeadEditor({
                 agentValue === currentAgentEmail ||
                 reassignStatus.kind === "saving"
               }
-              className="min-h-12 rounded-control border border-my-line bg-my-surface px-6 font-medium text-my-ink transition-colors hover:bg-my-paper disabled:cursor-not-allowed disabled:opacity-40"
+              className="btn-quiet disabled:cursor-not-allowed disabled:opacity-40"
             >
               Reassign lead
             </button>

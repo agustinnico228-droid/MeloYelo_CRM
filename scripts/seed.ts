@@ -10,6 +10,7 @@
 import { getPayload, type Payload } from "payload";
 import config from "../src/payload.config";
 import { DEFAULT_NAV } from "../src/lib/nav";
+import { toLayout } from "./lexical";
 import {
   SEED_CAMPAIGNS,
   SEED_DASHBOARDS,
@@ -77,21 +78,9 @@ async function seedPages(payload: Payload) {
         slug: page.slug,
         section: page.section,
         showToc: page.showToc ?? false,
+        audience: page.audience ?? "all",
         _status: "published",
-        layout: page.blocks.map((b) =>
-          b.blockType === "callout"
-            ? {
-                blockType: "callout" as const,
-                tone: b.tone ?? "info",
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                content: b.content as any,
-              }
-            : {
-                blockType: "richText" as const,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                content: b.content as any,
-              },
-        ),
+        layout: toLayout(page.blocks),
       },
     });
     console.log(`page: ${page.slug}${page.grounded ? "" : " (stub)"}`);
@@ -216,7 +205,11 @@ async function seed() {
   process.exit(0);
 }
 
-seed().catch((err) => {
+// Top-level await, not a floating promise — `payload run` exits as soon as
+// module evaluation finishes, which would kill the seed before it runs.
+try {
+  await seed();
+} catch (err) {
   console.error(err);
   process.exit(1);
-});
+}

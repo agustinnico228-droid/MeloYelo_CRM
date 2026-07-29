@@ -5,9 +5,9 @@ import { LEAD_HEADERS } from "./mappers";
 /**
  * Development fixture used ONLY while the Sheets service account is not
  * configured (never silently in production). It reproduces every §9 data
- * problem — six phone formats, leading-zero and malformed postcodes,
+ * problem - six phone formats, leading-zero and malformed postcodes,
  * mixed stage-date formats, a speed-to-lead outlier with a thousands
- * comma, duplicates, unassigned leads and an append-blob Notes field —
+ * comma, duplicates, unassigned leads and an append-blob Notes field -
  * so downstream phases are built against realistic dirt, not clean data.
  */
 
@@ -32,7 +32,8 @@ const MOCK_LEADS: MockLead[] = [
     agent: "Sarah Mitchell",
     agentEmail: "sarah@meloyelo.nz",
     city: "Whangārei",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10101",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10101",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10101",
     source: "Website Form",
   },
@@ -55,7 +56,8 @@ const MOCK_LEADS: MockLead[] = [
     stageUpdateTo: "Made contact",
     speedToLeadMinutes: "1493",
     source: "Website Form",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10102",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10102",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10102",
   },
   {
@@ -71,13 +73,14 @@ const MOCK_LEADS: MockLead[] = [
     agentEmail: "priya@meloyelo.nz",
     city: "Wellington",
     notes:
-      "10:15am 08/07/26 Priya Patel: Called, keen on a test ride this weekend.\n2:47pm 10/07/26 Priya Patel: Booked test ride for Saturday at the Wellington hub. Wants the step-through model — mentioned her partner may come along too, which could mean a second sale if the ride goes well. Bring both frame sizes and the comfort saddle option, plus the finance one-pager since she asked about weekly payments twice. Parking is tight near her office so meet at the waterfront entrance. She is comparing us against a second-hand petrol scooter, so emphasise running costs and the servicing plan.",
+      "10:15am 08/07/26 Priya Patel: Called, keen on a test ride this weekend.\n2:47pm 10/07/26 Priya Patel: Booked test ride for Saturday at the Wellington hub. Wants the step-through model - mentioned her partner may come along too, which could mean a second sale if the ride goes well. Bring both frame sizes and the comfort saddle option, plus the finance one-pager since she asked about weekly payments twice. Parking is tight near her office so meet at the waterfront entrance. She is comparing us against a second-hand petrol scooter, so emphasise running costs and the servicing plan.",
     stageUpdatedAt: "2:47pm 10/07/26",
     stageUpdateFrom: "Made contact",
     stageUpdateTo: "Test Ride Booked",
     speedToLeadMinutes: "122",
     source: "Website Form",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10103",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10103",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10103",
   },
   {
@@ -100,7 +103,8 @@ const MOCK_LEADS: MockLead[] = [
     stageUpdateTo: "MY Customer",
     speedToLeadMinutes: "45",
     source: "Warranty Registration",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10104",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10104",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10104",
   },
   {
@@ -116,7 +120,8 @@ const MOCK_LEADS: MockLead[] = [
     city: "Auckland",
     alert48Sent: "TRUE",
     source: "Call Centre",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10105",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10105",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10105",
   },
   {
@@ -139,11 +144,12 @@ const MOCK_LEADS: MockLead[] = [
     alert48Sent: "TRUE",
     alert5DaySent: "TRUE",
     source: "Website Form",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10106",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10106",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10106",
   },
   {
-    // Duplicate person #2 — same human, different email
+    // Duplicate person #2 - same human, different email
     uniqueId: "10107",
     dateAdded: "19/07/2026 15:47:20",
     firstName: "Grace",
@@ -156,7 +162,8 @@ const MOCK_LEADS: MockLead[] = [
     agentEmail: "dave@meloyelo.nz",
     city: "Auckland",
     source: "AgentForm",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10107",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10107",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10107",
   },
   {
@@ -179,7 +186,8 @@ const MOCK_LEADS: MockLead[] = [
     stageUpdateTo: "Test Ride Completed",
     speedToLeadMinutes: "2210",
     source: "Website Form",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10108",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10108",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10108",
   },
   {
@@ -193,7 +201,8 @@ const MOCK_LEADS: MockLead[] = [
     stage: "Lead",
     city: "Hamilton",
     source: "Website Form",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10109",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10109",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10109",
   },
   {
@@ -215,7 +224,8 @@ const MOCK_LEADS: MockLead[] = [
     stageUpdateTo: "Offer Accepted",
     speedToLeadMinutes: "88",
     source: "Website Form",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10110",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10110",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10110",
   },
   {
@@ -235,11 +245,12 @@ const MOCK_LEADS: MockLead[] = [
     stageUpdateTo: "Test Ride Declined",
     speedToLeadMinutes: "310",
     source: "Call Centre",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10111",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10111",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10111",
   },
   {
-    // Stale "Made contact" — needs action (§11 Today)
+    // Stale "Made contact" - needs action (§11 Today)
     uniqueId: "10112",
     dateAdded: "11/07/2026 07:26:14",
     firstName: "Moana",
@@ -257,7 +268,8 @@ const MOCK_LEADS: MockLead[] = [
     speedToLeadMinutes: "1552",
     alert48Sent: "TRUE",
     source: "Website Form",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10112",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10112",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10112",
   },
   {
@@ -277,11 +289,12 @@ const MOCK_LEADS: MockLead[] = [
     stageUpdateTo: "Offer Declined",
     speedToLeadMinutes: "664",
     source: "Website Form",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10113",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10113",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10113",
   },
   {
-    // Brand new today — needs action
+    // Brand new today - needs action
     uniqueId: "10114",
     dateAdded: "22/07/2026 07:58:00",
     firstName: "Lucy",
@@ -294,7 +307,8 @@ const MOCK_LEADS: MockLead[] = [
     agentEmail: "dave@meloyelo.nz",
     city: "Auckland",
     source: "Website Form",
-    viewUpdateUrl: "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10114",
+    viewUpdateUrl:
+      "https://docs.google.com/forms/d/e/mock/viewform?entry.1=10114",
     liveUpdateLink: "https://script.google.com/macros/s/mock/exec?id=10114",
   },
 ];
@@ -306,10 +320,30 @@ export const MOCK_TABS: Record<string, string[][]> = {
   ],
   Agents: [
     ["Agent Name", "Notification Email", "CRM Email", "Region"],
-    ["Sarah Mitchell", "sarah.notify@meloyelo.nz", "sarah@meloyelo.nz", "Northland"],
-    ["Dave Thompson", "dave.notify@meloyelo.nz", "dave@meloyelo.nz", "Auckland Central"],
-    ["Priya Patel", "priya.notify@meloyelo.nz", "priya@meloyelo.nz", "Wellington"],
-    ["Mike O'Brien", "mike.notify@meloyelo.nz", "mike@meloyelo.nz", "Canterbury"],
+    [
+      "Sarah Mitchell",
+      "sarah.notify@meloyelo.nz",
+      "sarah@meloyelo.nz",
+      "Northland",
+    ],
+    [
+      "Dave Thompson",
+      "dave.notify@meloyelo.nz",
+      "dave@meloyelo.nz",
+      "Auckland Central",
+    ],
+    [
+      "Priya Patel",
+      "priya.notify@meloyelo.nz",
+      "priya@meloyelo.nz",
+      "Wellington",
+    ],
+    [
+      "Mike O'Brien",
+      "mike.notify@meloyelo.nz",
+      "mike@meloyelo.nz",
+      "Canterbury",
+    ],
   ],
   Postcodes: [
     ["Post Code", "Agent", "Agent Email"],
@@ -326,14 +360,50 @@ export const MOCK_TABS: Record<string, string[][]> = {
     ["Unique ID", "From", "To", "Changed At", "Agent"],
     ["10102", "Lead", "Made contact", "16/07/2026 10:05:11", "Dave Thompson"],
     ["10103", "Lead", "Made contact", "08/07/2026 10:15:40", "Priya Patel"],
-    ["10103", "Made contact", "Test Ride Booked", "2:47pm 10/07/26", "Priya Patel"],
-    ["10104", "Offer Accepted", "MY Customer", "20/05/2026 16:44:52", "Mike O'Brien"],
+    [
+      "10103",
+      "Made contact",
+      "Test Ride Booked",
+      "2:47pm 10/07/26",
+      "Priya Patel",
+    ],
+    [
+      "10104",
+      "Offer Accepted",
+      "MY Customer",
+      "20/05/2026 16:44:52",
+      "Mike O'Brien",
+    ],
     ["10106", "Lead", "Contact Failed", "05/06/2026 09:30:00", "Dave Thompson"],
-    ["10108", "Test Ride Booked", "Test Ride Completed", "30/06/2026 09:20:44", "Mike O'Brien"],
-    ["10110", "Test Ride Completed", "Offer Accepted", "18/07/2026 14:22:03", "Sarah Mitchell"],
-    ["10111", "Made contact", "Test Ride Declined", "06/07/2026 10:12:40", "Priya Patel"],
+    [
+      "10108",
+      "Test Ride Booked",
+      "Test Ride Completed",
+      "30/06/2026 09:20:44",
+      "Mike O'Brien",
+    ],
+    [
+      "10110",
+      "Test Ride Completed",
+      "Offer Accepted",
+      "18/07/2026 14:22:03",
+      "Sarah Mitchell",
+    ],
+    [
+      "10111",
+      "Made contact",
+      "Test Ride Declined",
+      "06/07/2026 10:12:40",
+      "Priya Patel",
+    ],
     ["10112", "Lead", "Made contact", "12/07/2026 09:18:26", "Dave Thompson"],
-    ["10113", "Test Ride Completed", "Offer Declined", "02/07/2026 11:05:17", "Mike O'Brien"],
+    [
+      "10113",
+      "Test Ride Completed",
+      "Offer Declined",
+      "02/07/2026 11:05:17",
+      "Mike O'Brien",
+    ],
   ],
   Config: [
     ["Key", "Value"],
@@ -357,7 +427,11 @@ export const MOCK_TABS: Record<string, string[][]> = {
   ],
   Logs: [
     ["Timestamp", "Type", "Message"],
-    ["22/07/2026 07:00:12", "INFO", "processNewContactSubmissionsBatch: 1 processed"],
+    [
+      "22/07/2026 07:00:12",
+      "INFO",
+      "processNewContactSubmissionsBatch: 1 processed",
+    ],
     [
       "19/07/2026 03:12:09",
       "ERROR",

@@ -1,6 +1,8 @@
 import type { CollectionConfig } from "payload";
 import { anyone, isAdmin, isAdminOrManager, nobody } from "./access";
 import { pageBlocks } from "./blocks";
+import { hubSsoStrategy } from "./hub-sso";
+import { collectionRevalidation } from "./revalidate";
 
 const audienceField = {
   name: "audience",
@@ -13,7 +15,11 @@ const audienceField = {
 /** Payload admin accounts. Content roles only — never CRM data access. */
 export const Users: CollectionConfig = {
   slug: "users",
-  auth: true,
+  // Hub-session SSO first (a signed-in manager/admin goes straight into
+  // /admin); the local email/password strategy remains as fallback.
+  auth: {
+    strategies: [hubSsoStrategy],
+  },
   admin: { useAsTitle: "email" },
   access: {
     read: isAdmin,
@@ -59,6 +65,7 @@ export const Pages: CollectionConfig = {
   slug: "pages",
   admin: { useAsTitle: "title", defaultColumns: ["title", "slug", "_status"] },
   versions: { drafts: { autosave: true } },
+  ...collectionRevalidation("cms:pages"),
   access: {
     read: anyone,
     create: isAdmin,
@@ -77,6 +84,9 @@ export const Pages: CollectionConfig = {
       required: true,
     },
     { name: "showToc", type: "checkbox", defaultValue: false },
+    // Who may view the page in the hub — enforced in the catch-all
+    // route. Working documents (rates, budgets) are managers-only.
+    audienceField,
     // Surfaced as "Last reviewed {date}" so stale docs are visible
     { name: "lastReviewed", type: "date" },
     { name: "layout", type: "blocks", blocks: pageBlocks },
@@ -88,6 +98,7 @@ export const Dashboards: CollectionConfig = {
   slug: "dashboards",
   orderable: true,
   admin: { useAsTitle: "title", defaultColumns: ["title", "audience"] },
+  ...collectionRevalidation("cms:dashboards"),
   access: {
     read: anyone,
     create: isAdmin,
@@ -110,6 +121,7 @@ export const Campaigns: CollectionConfig = {
   slug: "campaigns",
   orderable: true,
   admin: { useAsTitle: "title", defaultColumns: ["title", "code", "status"] },
+  ...collectionRevalidation("cms:campaigns"),
   access: {
     read: anyone,
     create: isAdmin,
@@ -163,8 +175,12 @@ export const Campaigns: CollectionConfig = {
 export const Guides: CollectionConfig = {
   slug: "guides",
   orderable: true,
-  admin: { useAsTitle: "title", defaultColumns: ["title", "audience", "_status"] },
+  admin: {
+    useAsTitle: "title",
+    defaultColumns: ["title", "audience", "_status"],
+  },
   versions: { drafts: { autosave: true } },
+  ...collectionRevalidation("cms:guides"),
   access: {
     read: anyone,
     create: isAdmin,
@@ -185,6 +201,7 @@ export const KnownIssues: CollectionConfig = {
   slug: "knownIssues",
   orderable: true,
   admin: { useAsTitle: "title", defaultColumns: ["title", "status"] },
+  ...collectionRevalidation("cms:knownIssues"),
   access: {
     read: anyone,
     create: isAdminOrManager,
@@ -210,7 +227,11 @@ export const KnownIssues: CollectionConfig = {
 
 export const Announcements: CollectionConfig = {
   slug: "announcements",
-  admin: { useAsTitle: "title", defaultColumns: ["title", "severity", "published"] },
+  admin: {
+    useAsTitle: "title",
+    defaultColumns: ["title", "severity", "published"],
+  },
+  ...collectionRevalidation("cms:announcements"),
   access: {
     read: anyone,
     create: isAdminOrManager,
@@ -239,6 +260,7 @@ export const QuickLinks: CollectionConfig = {
   slug: "quickLinks",
   orderable: true,
   admin: { useAsTitle: "label", defaultColumns: ["label", "group"] },
+  ...collectionRevalidation("cms:quickLinks"),
   access: {
     read: anyone,
     create: isAdmin,

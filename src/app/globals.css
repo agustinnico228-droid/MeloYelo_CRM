@@ -1,54 +1,61 @@
 @import "tailwindcss";
 
 /*
- * MeloYelo brand system — §5 of the build spec.
- * #FFDE00 fails WCAG for text: yellow is a surface/accent colour only,
+ * MeloYelo brand system — §5 of the build spec, colour values taken from
+ * the meloyelo.nz production CSS (Bikys theme tokens + Elementor kit,
+ * scraped July 2026 — see the selectors quoted per token):
+ *   --primary #FFDB00 · --accent #000 · --text #404040 · --border #E2E2E2
+ *   green CTA #1CAF32 · hover swaps yellow↔green · square corners.
+ * #FFDB00 fails WCAG for text: yellow is a surface/accent colour only,
  * and any text on yellow must be --color-my-ink.
  */
 @theme {
-  /* Palette */
-  --color-my-yellow: #ffde00;
-  --color-my-green: #5eb132;
-  --color-my-ink: #14161a;
-  --color-my-slate: #5b6672;
-  --color-my-paper: #fbfbf9;
-  --color-my-surface: #ffffff;
-  --color-my-line: #e6e8ea;
-  --color-my-alert: #c0392b;
-  --color-my-warn: #e8a317;
+  /* Palette — mirrors the site's token system */
+  --color-my-yellow: #ffdb00; /* site --primary / --e-global-color-primary */
+  --color-my-yellow-press: #ebca02; /* site --e-global-color-primary_hover */
+  --color-my-green: #1caf32; /* site green CTA / accent — surfaces only */
+  --color-my-green-ink: #12801f; /* site green darkened to AA for text on white */
+  --color-my-ink: #000000; /* site --accent: headings, nav, text on yellow */
+  --color-my-charcoal: #222222; /* site dropdown/sub-menu panels */
+  --color-my-body: #404040; /* site --text: body copy */
+  --color-my-slate: #6b6b6b; /* muted text — site greys, darkened to pass AA */
+  --color-my-paper: #f6f6f6; /* site --background_light */
+  --color-my-surface: #ffffff; /* site --background */
+  --color-my-line: #e2e2e2; /* site --border */
+  --color-my-alert: #c43a1b; /* site error red family, darkened to pass AA */
+  --color-my-warn: #b45309; /* amber dark enough for AA text on white/paper */
 
   /* Stage progression accents not in the core palette */
   --color-stage-blue: #2e6fd8; /* Made contact — in motion */
   --color-stage-deep: #3f8f22; /* MY Customer — won, deepest green */
 
   /*
-   * Typography. Bikys Heading has no confirmed web licence (§18.1):
-   * display type deliberately falls back to Heebo 700. When licensed
-   * WOFF2 files land in /public/fonts, add a next/font/local var
-   * --font-bikys and put it first in --font-display.
+   * Typography. Bikys Heading (the site's display face, weight 700 only)
+   * is served from /public/fonts, wired in layout.tsx as --font-bikys.
+   * Heebo remains the body face and the display fallback.
    */
-  --font-display: var(--font-heebo), system-ui, sans-serif;
+  --font-display: var(--font-bikys), var(--font-heebo), system-ui, sans-serif;
   --font-body: var(--font-heebo), system-ui, -apple-system, sans-serif;
 
   /* Fluid type scale — hits brand values (60/50/18) at desktop */
   --text-h1: clamp(2rem, 1.3rem + 3vw, 3.75rem);
-  --text-h1--line-height: 1.1;
+  --text-h1--line-height: 1.05;
   --text-h2: clamp(1.75rem, 1.2rem + 2.4vw, 3.125rem);
-  --text-h2--line-height: 1.15;
+  --text-h2--line-height: 1.1;
   --text-h3: clamp(1.375rem, 1.1rem + 1.2vw, 1.75rem);
-  --text-h3--line-height: 1.25;
+  --text-h3--line-height: 1.2;
   --text-body: 1.125rem;
   --text-body--line-height: 1.6;
   /* 16px is the hard floor anywhere in the UI */
   --text-sm: 1rem;
   --text-sm--line-height: 1.5;
 
-  /* Shape */
-  --radius-card: 10px;
-  --radius-control: 8px;
+  /* Shape — the site is hard-square (theme forces border-radius: 0) */
+  --radius-card: 0px;
+  --radius-control: 0px;
 
-  /* The one shadow */
-  --shadow-card: 0 1px 3px rgb(20 22 26 / 0.08);
+  /* The one shadow — the site's soft floating-panel shadow */
+  --shadow-card: 0 0 30px 0 rgb(0 0 0 / 0.05);
 }
 
 @layer base {
@@ -68,6 +75,7 @@
   h3 {
     font-family: var(--font-display);
     font-weight: 700;
+    color: var(--color-my-ink);
   }
 
   /* Visible focus everywhere — keyboard users are first-class */
@@ -79,16 +87,90 @@
   h1 {
     font-size: var(--text-h1);
     line-height: var(--text-h1--line-height);
+    letter-spacing: -0.02em;
   }
 
   h2 {
     font-size: var(--text-h2);
     line-height: var(--text-h2--line-height);
+    letter-spacing: -0.015em;
   }
 
   h3 {
     font-size: var(--text-h3);
     line-height: var(--text-h3--line-height);
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  /*
+   * Brand buttons — the site's signature interaction is a colour swap:
+   * yellow buttons hover to green (text flips to white), green buttons
+   * hover to yellow (text flips to ink). Square, uppercase, tracked.
+   * Both meet the 48px touch floor via min-height.
+   */
+  .btn-brand,
+  .btn-brand-green {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0.625rem 1.5rem;
+    border-radius: var(--radius-control);
+    font-weight: 700;
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  /*
+   * Green surfaces that carry white text use the AA-dark green: the site
+   * pairs white with #1CAF32 at 2.9:1, which fails WCAG — #12801f keeps
+   * the swap look at 5.1:1. Pure #1CAF32 stays for dots/tints/ink text.
+   */
+  .btn-brand {
+    background-color: var(--color-my-yellow);
+    color: var(--color-my-ink);
+  }
+  .btn-brand:hover {
+    background-color: var(--color-my-green-ink);
+    color: #ffffff;
+  }
+
+  .btn-brand-green {
+    background-color: var(--color-my-green-ink);
+    color: #ffffff;
+  }
+  .btn-brand-green:hover {
+    background-color: var(--color-my-yellow);
+    color: var(--color-my-ink);
+  }
+
+  /* Quiet button — bordered, for secondary actions */
+  .btn-quiet {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
+    padding: 0.625rem 1.25rem;
+    border: 1px solid var(--color-my-line);
+    border-radius: var(--radius-control);
+    background-color: var(--color-my-surface);
+    color: var(--color-my-ink);
+    font-weight: 500;
+    font-size: var(--text-sm);
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+  .btn-quiet:hover {
+    border-color: var(--color-my-ink);
   }
 }
 
@@ -117,6 +199,12 @@
 }
 .rich-text a {
   text-decoration: underline;
+  /* Site convention: green links inside long-form content (AA-dark shade) */
+  color: var(--color-my-green-ink);
+  text-decoration-color: var(--color-my-green-ink);
+}
+.rich-text a:hover {
+  color: var(--color-my-ink);
 }
 .rich-text img {
   max-width: 100%;

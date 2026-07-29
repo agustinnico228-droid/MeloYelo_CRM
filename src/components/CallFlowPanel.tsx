@@ -19,8 +19,8 @@ import {
 const STEPS = [
   "Still interested in an e-bike?",
   "Already bought one?",
-  "If still interested — aim to book a test ride",
-  "If not ready — agree a follow-up, or offer email updates",
+  "If still interested, aim to book a test ride",
+  "If not ready, agree a follow-up or offer email updates",
   "Always end with a clear outcome",
 ];
 
@@ -170,9 +170,9 @@ export default function CallFlowPanel({
         type="button"
         onClick={record}
         disabled={!selected || pending}
-        className="mt-4 min-h-12 w-full rounded-control bg-my-yellow px-6 font-bold text-my-ink transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+        className="btn-brand mt-4 w-full disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
       >
-        {pending ? "Recording…" : "Record outcome"}
+        {pending ? "Recording..." : "Record outcome"}
       </button>
 
       {status.kind !== "idle" ? (

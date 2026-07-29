@@ -33,7 +33,7 @@ export default function LeadCard({
           <p className="mt-1 text-sm text-my-slate">
             {[lead.city, waiting ? `waiting ${waiting}` : null]
               .filter(Boolean)
-              .join(" · ")}
+              .join(" - ")}
           </p>
         </div>
         <StagePill stage={lead.stage} />
@@ -47,10 +47,7 @@ export default function LeadCard({
 
       <div className="mt-4 flex gap-2">
         {tel ? (
-          <a
-            href={tel}
-            className="flex min-h-12 flex-1 items-center justify-center rounded-control bg-my-yellow px-4 font-bold text-my-ink transition-opacity hover:opacity-90"
-          >
+          <a href={tel} className="btn-brand flex-1">
             Call {lead.firstName || "lead"}
           </a>
         ) : (
@@ -58,10 +55,7 @@ export default function LeadCard({
             No phone number
           </span>
         )}
-        <Link
-          href={`/leads/${lead.uniqueId}`}
-          className="flex min-h-12 flex-1 items-center justify-center rounded-control border border-my-line bg-my-surface px-4 font-medium text-my-ink transition-colors hover:bg-my-paper"
-        >
+        <Link href={`/leads/${lead.uniqueId}`} className="btn-quiet flex-1">
           Update
         </Link>
       </div>

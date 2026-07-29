@@ -33,7 +33,9 @@ function colIndex(tabName: string, header: string): number {
 function findLeadRow(uniqueId: string): string[] | null {
   const rows = tab("All data");
   const idCol = colIndex("All data", LEAD_HEADERS.uniqueId);
-  return rows.slice(1).find((r) => (r[idCol] ?? "").trim() === uniqueId) ?? null;
+  return (
+    rows.slice(1).find((r) => (r[idCol] ?? "").trim() === uniqueId) ?? null
+  );
 }
 
 function noteStamp(now: Date): string {
@@ -205,12 +207,18 @@ export async function mockAddLead(
   set(row, LEAD_HEADERS.stage, "Lead");
   set(row, LEAD_HEADERS.source, "AgentForm");
   if (req.notes) {
-    set(row, LEAD_HEADERS.notes, `${noteStamp(new Date())} ${actor.name}: ${req.notes}`);
+    set(
+      row,
+      LEAD_HEADERS.notes,
+      `${noteStamp(new Date())} ${actor.name}: ${req.notes}`,
+    );
   }
   routeByPostcode(row);
   all.push(row);
 
-  appendLog(`addLead by ${actor.email}: ${req.firstName} ${req.lastName ?? ""}`);
+  appendLog(
+    `addLead by ${actor.email}: ${req.firstName} ${req.lastName ?? ""}`,
+  );
   return { ok: true, pending: true };
 }
 
@@ -224,9 +232,7 @@ export async function mockReassign(
   const agents = tab("Agents");
   const target = agents
     .slice(1)
-    .find(
-      (a) => (a[2] ?? "").toLowerCase() === req.agentEmail.toLowerCase(),
-    );
+    .find((a) => (a[2] ?? "").toLowerCase() === req.agentEmail.toLowerCase());
   if (!target) return { ok: false, error: "agent not found in Agents tab" };
 
   const previous = get(row, LEAD_HEADERS.agent) || "unassigned";
@@ -234,10 +240,12 @@ export async function mockReassign(
   set(row, LEAD_HEADERS.agentEmail, (target[2] ?? "").toLowerCase());
 
   const existing = get(row, LEAD_HEADERS.notes);
-  const entry = `${noteStamp(new Date())} ${actor.name}: Reassigned from ${previous} to ${target[0]}${req.reason ? ` — ${req.reason}` : ""}`;
+  const entry = `${noteStamp(new Date())} ${actor.name}: Reassigned from ${previous} to ${target[0]}${req.reason ? ` - ${req.reason}` : ""}`;
   set(row, LEAD_HEADERS.notes, existing ? `${existing}\n${entry}` : entry);
 
-  appendLog(`reassign ${req.uniqueId} by ${actor.email}: ${previous} → ${target[0]}`);
+  appendLog(
+    `reassign ${req.uniqueId} by ${actor.email}: ${previous} to ${target[0]}`,
+  );
   return {
     ok: true,
     row: { Agent: target[0], "Agent Email": (target[2] ?? "").toLowerCase() },

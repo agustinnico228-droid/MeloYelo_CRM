@@ -1,10 +1,12 @@
 import type { GlobalConfig } from "payload";
 import { anyone, isAdmin } from "./access";
+import { globalRevalidation } from "./revalidate";
 
 /** §12 navigation: drag-and-drop tree with per-item audience. */
 export const Navigation: GlobalConfig = {
   slug: "navigation",
   access: { read: anyone, update: isAdmin },
+  ...globalRevalidation("cms:navigation"),
   fields: [
     {
       name: "items",
@@ -43,6 +45,7 @@ export const Navigation: GlobalConfig = {
 export const Settings: GlobalConfig = {
   slug: "settings",
   access: { read: anyone, update: isAdmin },
+  ...globalRevalidation("cms:settings"),
   fields: [
     { name: "logo", type: "upload", relationTo: "media" },
     { name: "supportContact", type: "text" },

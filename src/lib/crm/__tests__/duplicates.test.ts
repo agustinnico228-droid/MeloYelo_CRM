@@ -57,8 +57,18 @@ describe("findLikelyDuplicates (§9.5)", () => {
 
   it("matches the same full name under different emails", () => {
     const groups = findLikelyDuplicates([
-      lead({ uniqueId: "1", firstName: "Grace", lastName: "Lin", email: "a@x.nz" }),
-      lead({ uniqueId: "2", firstName: "Grace", lastName: "Lin", email: "b@x.nz" }),
+      lead({
+        uniqueId: "1",
+        firstName: "Grace",
+        lastName: "Lin",
+        email: "a@x.nz",
+      }),
+      lead({
+        uniqueId: "2",
+        firstName: "Grace",
+        lastName: "Lin",
+        email: "b@x.nz",
+      }),
     ]);
     expect(groups).toHaveLength(1);
     expect(groups[0].kind).toBe("name");

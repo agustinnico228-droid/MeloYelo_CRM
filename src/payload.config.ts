@@ -19,7 +19,35 @@ const dirname = path.dirname(filename);
 export default buildConfig({
   admin: {
     user: "users",
-    meta: { titleSuffix: " · MeloYelo CRM Hub" },
+    meta: { titleSuffix: " - MeloYelo CRM Hub" },
+    // Google-Sites-style editing: the admin shows the real page in a live
+    // preview pane while you edit, with device-width toggles. Draft-enabled
+    // collections (pages, guides) preview unsaved changes via ?preview=1.
+    livePreview: {
+      url: ({ data, collectionConfig }) => {
+        const base =
+          process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:3000";
+        const slug = typeof data?.slug === "string" ? data.slug : "";
+        switch (collectionConfig?.slug) {
+          case "pages":
+            return `${base}/${slug}?preview=1`;
+          case "guides":
+            return `${base}/guides/${slug}?preview=1`;
+          case "campaigns":
+            return `${base}/campaigns/${slug}`;
+          case "dashboards":
+            return `${base}/dashboards/${slug}`;
+          default:
+            return base;
+        }
+      },
+      collections: ["pages", "guides", "campaigns", "dashboards"],
+      breakpoints: [
+        { label: "Mobile", name: "mobile", width: 390, height: 844 },
+        { label: "Tablet", name: "tablet", width: 834, height: 1194 },
+        { label: "Desktop", name: "desktop", width: 1440, height: 900 },
+      ],
+    },
   },
   editor: lexicalEditor(),
   collections,
@@ -31,9 +59,7 @@ export default buildConfig({
   }),
   secret:
     process.env.PAYLOAD_SECRET ??
-    (process.env.NODE_ENV !== "production"
-      ? "dev-only-payload-secret"
-      : ""),
+    (process.env.NODE_ENV !== "production" ? "dev-only-payload-secret" : ""),
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),

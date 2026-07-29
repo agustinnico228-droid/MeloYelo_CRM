@@ -86,8 +86,10 @@ export default function AddLeadForm() {
       <div className="rounded-card border border-my-green/40 bg-my-green/10 p-6 text-center shadow-card">
         <h2 className="text-h3">Lead added</h2>
         <p className="mt-2 text-my-slate">
-          It&apos;ll appear in your list within a few minutes —
-          {routing ? ` routed to ${routing.agentName}.` : " routed by postcode."}
+          It&apos;ll appear in your list within a few minutes,
+          {routing
+            ? ` routed to ${routing.agentName}.`
+            : " routed by postcode."}
         </p>
         <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row">
           <button
@@ -98,14 +100,11 @@ export default function AddLeadForm() {
               setRoutingState("idle");
               setAdded(false);
             }}
-            className="min-h-12 rounded-control bg-my-yellow px-6 font-bold text-my-ink transition-opacity hover:opacity-90"
+            className="btn-brand"
           >
             Add another lead
           </button>
-          <Link
-            href="/leads"
-            className="flex min-h-12 items-center justify-center rounded-control border border-my-line bg-my-surface px-6 font-medium"
-          >
+          <Link href="/leads" className="btn-quiet">
             Back to leads
           </Link>
         </div>
@@ -148,7 +147,9 @@ export default function AddLeadForm() {
           <input
             type="email"
             value={values.email}
-            onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
+            onChange={(e) =>
+              setValues((v) => ({ ...v, email: e.target.value }))
+            }
             className={inputCls}
           />
         </label>
@@ -157,7 +158,9 @@ export default function AddLeadForm() {
           <input
             type="tel"
             value={values.phone}
-            onChange={(e) => setValues((v) => ({ ...v, phone: e.target.value }))}
+            onChange={(e) =>
+              setValues((v) => ({ ...v, phone: e.target.value }))
+            }
             className={inputCls}
           />
         </label>
@@ -172,7 +175,7 @@ export default function AddLeadForm() {
           />
           {routingState === "looking" ? (
             <span className="mt-1 block text-sm text-my-slate">
-              Checking who covers this postcode…
+              Checking who covers this postcode...
             </span>
           ) : routingState === "done" && routing ? (
             <span className="mt-1 block text-sm font-medium text-stage-deep">
@@ -181,7 +184,7 @@ export default function AddLeadForm() {
             </span>
           ) : routingState === "done" && !routing ? (
             <span className="mt-1 block text-sm text-my-warn">
-              No agent covers this postcode yet — the lead will need manual
+              No agent covers this postcode yet, so the lead will need manual
               assignment.
             </span>
           ) : null}
@@ -218,9 +221,9 @@ export default function AddLeadForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-5 min-h-12 w-full rounded-control bg-my-yellow px-6 font-bold text-my-ink transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+        className="btn-brand mt-5 w-full disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
       >
-        {pending ? "Adding lead…" : "Add lead"}
+        {pending ? "Adding lead..." : "Add lead"}
       </button>
     </form>
   );

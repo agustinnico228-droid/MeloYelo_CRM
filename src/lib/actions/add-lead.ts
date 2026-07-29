@@ -15,7 +15,12 @@ const addLeadSchema = z
   .object({
     firstName: z.string().trim().min(1, "First name is needed").max(200),
     lastName: z.string().trim().max(200).optional(),
-    email: z.string().trim().email("That email doesn't look right").max(320).or(z.literal("")),
+    email: z
+      .string()
+      .trim()
+      .email("That email doesn't look right")
+      .max(320)
+      .or(z.literal("")),
     phone: z.string().trim().max(50).optional(),
     postCode: z
       .string()
@@ -36,7 +41,7 @@ export async function addLead(input: unknown): Promise<ActionResult> {
   if (viewingAs) {
     return {
       ok: false,
-      error: `You're viewing as ${viewingAs.name} — read-only. Exit view-as to make changes.`,
+      error: `You're viewing as ${viewingAs.name}. Read-only. Exit view-as to make changes.`,
     };
   }
   const parsed = addLeadSchema.safeParse(input);
@@ -54,7 +59,10 @@ export async function addLead(input: unknown): Promise<ActionResult> {
     };
   }
   if (!allowWrite(user.email)) {
-    return { ok: false, error: "Too many changes at once — wait a moment and try again." };
+    return {
+      ok: false,
+      error: "Too many changes at once. Wait a moment and try again.",
+    };
   }
 
   const result = await hubAddLead(
@@ -70,7 +78,10 @@ export async function addLead(input: unknown): Promise<ActionResult> {
     { email: user.email, name: user.name },
   );
   if (!result.ok) {
-    return { ok: false, error: result.error ?? "The lead didn't save. Try again." };
+    return {
+      ok: false,
+      error: result.error ?? "The lead didn't save. Try again.",
+    };
   }
 
   await recordAudit([

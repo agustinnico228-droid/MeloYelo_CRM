@@ -39,7 +39,7 @@ export async function recordAudit(
       const { createAuditEntry } = await import("./cms");
       for (const e of stamped) {
         await createAuditEntry({
-          summary: `${e.actorEmail} · ${e.action} ${e.uniqueId} · ${e.field}`,
+          summary: `${e.actorEmail} - ${e.action} ${e.uniqueId} - ${e.field}`,
           actorEmail: e.actorEmail,
           action: e.action,
           uniqueId: e.uniqueId,

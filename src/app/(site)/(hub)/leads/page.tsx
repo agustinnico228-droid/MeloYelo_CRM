@@ -1,0 +1,308 @@
+import type { Metadata } from "next";
+import { cookies, headers } from "next/headers";
+import Link from "next/link";
+import LeadCard from "@/components/LeadCard";
+import LeadsGrid from "@/components/LeadsGrid";
+import ViewToggle from "@/components/ViewToggle";
+import { visibleLeads } from "@/lib/crm/access";
+import {
+  filterAndSortLeads,
+  type AlertFlag,
+  type LeadSort,
+} from "@/lib/crm/filter";
+import { STAGES } from "@/lib/crm/types";
+import { canSeeAllLeads } from "@/lib/roles";
+import { getCoreData, getLookupData } from "@/lib/sheets";
+import { requireEffectiveUser } from "@/lib/view-as";
+
+export const metadata: Metadata = { title: "Leads" };
+export const dynamic = "force-dynamic";
+
+const PAGE_SIZE = 50;
+
+const SOURCES = [
+  "Website Form",
+  "AgentForm",
+  "Warranty Registration",
+  "Call Centre",
+];
+
+type Params = {
+  q?: string;
+  stage?: string;
+  source?: string;
+  agent?: string;
+  unassigned?: string;
+  flag?: string;
+  sort?: string;
+  page?: string;
+  view?: string;
+};
+
+const FLAG_CHIPS: { value: AlertFlag; label: string }[] = [
+  { value: "48h", label: "48 h alert sent" },
+  { value: "5d", label: "5 day alert sent" },
+  { value: "final", label: "Final follow-up sent" },
+];
+
+/** Cookie wins; first visit defaults per device (§11). */
+async function resolveView(
+  param: string | undefined,
+): Promise<"cards" | "grid"> {
+  if (param === "cards" || param === "grid") return param;
+  const saved = (await cookies()).get("myhub-view")?.value;
+  if (saved === "cards" || saved === "grid") return saved;
+  const ua = (await headers()).get("user-agent") ?? "";
+  return /Mobile|Android|iPhone/i.test(ua) ? "cards" : "grid";
+}
+
+function pageUrl(params: Params, page: number): string {
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) if (v) sp.set(k, v);
+  sp.set("page", String(page));
+  return `/leads?${sp}`;
+}
+
+export default async function LeadsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Params>;
+}) {
+  const params = await searchParams;
+  const { effective: user } = await requireEffectiveUser();
+  const [core, lookups] = await Promise.all([getCoreData(), getLookupData()]);
+
+  const seesAll = user.role !== null && canSeeAllLeads(user.role);
+  const mine = visibleLeads(user, core.leads);
+
+  const activeFlag = (["48h", "5d", "final"] as const).includes(
+    params.flag as AlertFlag,
+  )
+    ? (params.flag as AlertFlag)
+    : undefined;
+
+  const filtered = filterAndSortLeads(mine, {
+    q: params.q,
+    stage: params.stage,
+    source: params.source,
+    agentEmail: seesAll ? params.agent : undefined,
+    unassigned: seesAll && params.unassigned === "1",
+    flag: activeFlag,
+    sort: (["newest", "oldest", "untouched"] as const).includes(
+      params.sort as LeadSort,
+    )
+      ? (params.sort as LeadSort)
+      : "newest",
+  });
+
+  const view = await resolveView(params.view);
+  const page = Math.max(1, Number(params.page) || 1);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageLeads = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  return (
+    <main
+      className={`mx-auto p-4 sm:p-6 ${view === "grid" ? "max-w-7xl" : "max-w-5xl"}`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-h3">Leads</h1>
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-my-slate">
+            {filtered.length} {filtered.length === 1 ? "lead" : "leads"}
+            {core.source === "mock" ? " - sample data" : null}
+          </p>
+          <ViewToggle view={view} />
+        </div>
+      </div>
+
+      {core.stale ? (
+        <p className="mt-3 rounded-control border border-my-warn/40 bg-my-warn/10 px-4 py-2 text-sm">
+          Data last updated {Math.round(core.ageMs / 60000)} min ago. The sheet
+          isn&apos;t responding right now.
+        </p>
+      ) : null}
+
+      <form
+        method="get"
+        className="mt-4 grid grid-cols-2 gap-2 rounded-card border border-my-line bg-my-surface p-3 shadow-card sm:grid-cols-4 lg:grid-cols-6"
+      >
+        <input
+          type="search"
+          name="q"
+          defaultValue={params.q ?? ""}
+          placeholder="Search name, email, phone..."
+          aria-label="Search leads"
+          className="col-span-2 min-h-12 rounded-control border border-my-line bg-my-surface px-3 text-my-ink placeholder:text-my-slate"
+        />
+        <select
+          name="stage"
+          defaultValue={params.stage ?? ""}
+          aria-label="Filter by stage"
+          className="min-h-12 rounded-control border border-my-line bg-my-surface px-2"
+        >
+          <option value="">All stages</option>
+          {STAGES.map((s) => (
+            <option key={s}>{s}</option>
+          ))}
+        </select>
+        <select
+          name="source"
+          defaultValue={params.source ?? ""}
+          aria-label="Filter by source"
+          className="min-h-12 rounded-control border border-my-line bg-my-surface px-2"
+        >
+          <option value="">All sources</option>
+          {SOURCES.map((s) => (
+            <option key={s}>{s}</option>
+          ))}
+        </select>
+        {seesAll ? (
+          <select
+            name="agent"
+            defaultValue={params.agent ?? ""}
+            aria-label="Filter by agent"
+            className="min-h-12 rounded-control border border-my-line bg-my-surface px-2"
+          >
+            <option value="">All agents</option>
+            {lookups.agents.map((a) => (
+              <option key={a.crmEmail} value={a.crmEmail}>
+                {a.name}
+              </option>
+            ))}
+          </select>
+        ) : null}
+        <select
+          name="sort"
+          defaultValue={params.sort ?? "newest"}
+          aria-label="Sort"
+          className="min-h-12 rounded-control border border-my-line bg-my-surface px-2"
+        >
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="untouched">Longest untouched</option>
+        </select>
+        <div className="col-span-2 flex items-center gap-3 sm:col-span-4 lg:col-span-1">
+          {seesAll ? (
+            <label className="flex min-h-12 items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="unassigned"
+                value="1"
+                defaultChecked={params.unassigned === "1"}
+                className="h-5 w-5 accent-my-ink"
+              />
+              Unassigned
+            </label>
+          ) : null}
+          <button
+            type="submit"
+            className="min-h-12 flex-1 rounded-control bg-my-ink px-4 font-medium text-white transition-opacity hover:opacity-90"
+          >
+            Apply
+          </button>
+        </div>
+      </form>
+
+      <div
+        className="mt-3 flex flex-wrap gap-2"
+        aria-label="Stale-lead filters"
+      >
+        {FLAG_CHIPS.map((chip) => {
+          const active = activeFlag === chip.value;
+          const sp = new URLSearchParams();
+          for (const [k, v] of Object.entries(params)) {
+            if (v && k !== "page" && k !== "flag") sp.set(k, v);
+          }
+          if (!active) sp.set("flag", chip.value);
+          return (
+            <Link
+              key={chip.value}
+              href={`/leads?${sp}`}
+              aria-pressed={active}
+              className={`flex min-h-10 items-center rounded-full border px-4 text-sm font-medium transition-colors ${
+                active
+                  ? "border-my-ink bg-my-ink text-white"
+                  : "border-my-line bg-my-surface text-my-ink hover:bg-my-paper"
+              }`}
+            >
+              {chip.label}
+              {active ? (
+                <svg
+                  className="ml-1.5 h-3 w-3"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
+                  <line x1="2" y1="2" x2="10" y2="10" />
+                  <line x1="10" y1="2" x2="2" y2="10" />
+                </svg>
+              ) : null}
+            </Link>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="mt-8 rounded-card border border-my-line bg-my-surface p-8 text-center shadow-card">
+          <p className="font-medium">No leads match.</p>
+          <p className="mt-2 text-sm text-my-slate">
+            Try clearing a filter, or{" "}
+            <Link href="/leads" className="underline">
+              start over
+            </Link>
+            .
+          </p>
+        </div>
+      ) : view === "grid" ? (
+        <LeadsGrid
+          leads={filtered.map((l) => ({
+            uniqueId: l.uniqueId,
+            firstName: l.firstName,
+            lastName: l.lastName,
+            email: l.email,
+            phone: l.phone,
+            postCode: l.postCode,
+            city: l.city,
+            stage: l.stage,
+            model: l.model,
+            serial: l.serial,
+            agent: l.agent,
+            dateAdded: l.dateAdded,
+            speedToLeadMinutes: l.speedToLeadMinutes,
+            source: l.source,
+          }))}
+        />
+      ) : (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {pageLeads.map((lead) => (
+            <LeadCard key={lead.uniqueId} lead={lead} showAgent={seesAll} />
+          ))}
+        </div>
+      )}
+
+      {view === "cards" && pageCount > 1 ? (
+        <nav
+          className="mt-6 flex items-center justify-center gap-4"
+          aria-label="Pagination"
+        >
+          {page > 1 ? (
+            <Link href={pageUrl(params, page - 1)} className="btn-quiet">
+              Previous
+            </Link>
+          ) : null}
+          <span className="text-sm text-my-slate">
+            Page {page} of {pageCount}
+          </span>
+          {page < pageCount ? (
+            <Link href={pageUrl(params, page + 1)} className="btn-quiet">
+              Next
+            </Link>
+          ) : null}
+        </nav>
+      ) : null}
+    </main>
+  );
+}

@@ -36,12 +36,7 @@ export function isForwardMove(from: string, to: string): boolean {
 
 /** §5 stage colour progression, expressed as design tones. */
 export type StageTone =
-  | "slate"
-  | "blue"
-  | "alert"
-  | "yellow"
-  | "green"
-  | "deep";
+  "slate" | "blue" | "alert" | "yellow" | "green" | "deep";
 
 const STAGE_TONES: Record<Stage, StageTone> = {
   Lead: "slate",

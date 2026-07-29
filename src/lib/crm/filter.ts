@@ -57,10 +57,7 @@ function touchedTime(lead: Lead): number {
   );
 }
 
-export function filterAndSortLeads(
-  leads: Lead[],
-  f: LeadFilters,
-): Lead[] {
+export function filterAndSortLeads(leads: Lead[], f: LeadFilters): Lead[] {
   let out = leads;
 
   if (f.q) out = out.filter((l) => matchesQuery(l, f.q!));

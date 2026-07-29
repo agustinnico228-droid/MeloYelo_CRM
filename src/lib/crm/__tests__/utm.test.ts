@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  buildUtmUrl,
-  isValidCampaignCode,
-  normalizeUtmValue,
-} from "../utm";
+import { buildUtmUrl, isValidCampaignCode, normalizeUtmValue } from "../utm";
 
 describe("normalizeUtmValue — correct inline, don't reject", () => {
   it("lowercases, hyphenates spaces, strips junk", () => {
@@ -65,6 +61,8 @@ describe("buildUtmUrl", () => {
   });
 
   it("returns null for an unusable landing URL", () => {
-    expect(buildUtmUrl("not a url", { source: "a", medium: "b", campaign: "c" })).toBeNull();
+    expect(
+      buildUtmUrl("not a url", { source: "a", medium: "b", campaign: "c" }),
+    ).toBeNull();
   });
 });

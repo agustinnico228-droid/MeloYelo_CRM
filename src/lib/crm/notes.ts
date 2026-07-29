@@ -15,8 +15,7 @@ export interface NoteEntry {
   text: string;
 }
 
-const ENTRY_START =
-  /(\d{1,2}:\d{2}\s*(?:am|pm)\s+\d{1,2}\/\d{1,2}\/\d{2,4})/gi;
+const ENTRY_START = /(\d{1,2}:\d{2}\s*(?:am|pm)\s+\d{1,2}\/\d{1,2}\/\d{2,4})/gi;
 
 export function parseNotes(blob: string): NoteEntry[] {
   const value = blob.trim();
@@ -29,14 +28,20 @@ export function parseNotes(blob: string): NoteEntry[] {
     const legacyEnd = matches.length === 0 ? value.length : matches[0].index!;
     const legacy = value.slice(0, legacyEnd).trim();
     if (legacy !== "") {
-      entries.push({ timestampRaw: null, date: null, author: null, text: legacy });
+      entries.push({
+        timestampRaw: null,
+        date: null,
+        author: null,
+        text: legacy,
+      });
     }
   }
 
   matches.forEach((m, i) => {
     const timestampRaw = m[1];
     const bodyStart = m.index! + m[0].length;
-    const bodyEnd = i + 1 < matches.length ? matches[i + 1].index! : value.length;
+    const bodyEnd =
+      i + 1 < matches.length ? matches[i + 1].index! : value.length;
     const body = value.slice(bodyStart, bodyEnd).trim();
 
     // "{actorName}: {text}" — author is everything up to the first colon,

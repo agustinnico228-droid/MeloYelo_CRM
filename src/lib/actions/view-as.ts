@@ -15,7 +15,11 @@ export async function startViewAs(formData: FormData): Promise<void> {
   // Manager/admin only, enforced here — never trust the UI (A5).
   if (!user || user.role === null || !canReassign(user.role)) return;
 
-  const parsed = z.string().trim().email().safeParse(formData.get("agentEmail"));
+  const parsed = z
+    .string()
+    .trim()
+    .email()
+    .safeParse(formData.get("agentEmail"));
   if (!parsed.success) return;
   const email = parsed.data.toLowerCase();
 

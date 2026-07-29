@@ -52,12 +52,12 @@ export default function UtmBuilder({
   if (isCustom && campaign !== "") {
     if (!isValidCampaignCode(campaign)) {
       campaignWarnings.push(
-        "Campaign names follow YYMM-shortname (e.g. 2604-fuel-crisis), with a real month in positions 3–4.",
+        "Campaign names follow YYMM-shortname (e.g. 2604-fuel-crisis), with a real month in positions 3-4.",
       );
     }
     if (!knownCodes.has(campaign)) {
       campaignWarnings.push(
-        "This doesn't match an existing MeloYelo campaign. Check the name or create the campaign first — utm_campaign must exactly match the official campaign name.",
+        "This doesn't match an existing MeloYelo campaign. Check the name or create the campaign first: utm_campaign must exactly match the official campaign name.",
       );
     }
   }
@@ -96,8 +96,8 @@ export default function UtmBuilder({
     <section className="rounded-card border border-my-line bg-my-surface p-5 shadow-card">
       <h2 className="text-h3">UTM builder</h2>
       <p className="mt-1 text-sm text-my-slate">
-        Pick the campaign — don&apos;t type it — and the link can&apos;t
-        break the exact-match rule.
+        Pick the campaign, don&apos;t type it, and the link can&apos;t break the
+        exact-match rule.
       </p>
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -110,10 +110,10 @@ export default function UtmBuilder({
           >
             {campaigns.map((c) => (
               <option key={c.code} value={c.code}>
-                {c.code} — {c.title} ({c.status})
+                {c.code} - {c.title} ({c.status})
               </option>
             ))}
-            <option value={CUSTOM}>New campaign (type the code)…</option>
+            <option value={CUSTOM}>New campaign (type the code)...</option>
           </select>
         </label>
 
@@ -151,7 +151,7 @@ export default function UtmBuilder({
               setLanding(e.target.value);
               setCopied(false);
             }}
-            placeholder="https://meloyelo.nz/…"
+            placeholder="https://meloyelo.nz/..."
             className={inputCls}
           />
         </label>
@@ -194,8 +194,8 @@ export default function UtmBuilder({
 
         <label className="block sm:col-span-2">
           <span className="text-sm text-my-slate">
-            utm_content (optional — use for A/B variants, e.g. no-incentive
-            / incentive)
+            utm_content (optional: use for A/B variants, e.g. no-incentive /
+            incentive)
           </span>
           <input
             value={content}
@@ -222,8 +222,7 @@ export default function UtmBuilder({
         </div>
       ) : (
         <p className="mt-5 rounded-control border border-my-line bg-my-paper px-4 py-3 text-sm text-my-slate">
-          Fill the campaign, landing page, source and medium to build the
-          link.
+          Fill the campaign, landing page, source and medium to build the link.
         </p>
       )}
     </section>

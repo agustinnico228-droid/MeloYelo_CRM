@@ -32,7 +32,10 @@ export function websiteFormLeads(
 ): Lead[] {
   return leads.filter((l) => {
     if (l.source !== MANAGER_METRICS_SOURCE) return false;
-    if (filters.agentEmail && l.agentEmail !== filters.agentEmail.toLowerCase()) {
+    if (
+      filters.agentEmail &&
+      l.agentEmail !== filters.agentEmail.toLowerCase()
+    ) {
       return false;
     }
     if (filters.from || filters.to) {

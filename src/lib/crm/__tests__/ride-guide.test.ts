@@ -42,9 +42,9 @@ function lead(overrides: Partial<Lead> & { uniqueId: string }): Lead {
 describe("isRideGuideLead — the hard source rule (§14.1)", () => {
   it("accepts only Website Form", () => {
     expect(isRideGuideLead(lead({ uniqueId: "1" }))).toBe(true);
-    expect(
-      isRideGuideLead(lead({ uniqueId: "2", source: "AgentForm" })),
-    ).toBe(false);
+    expect(isRideGuideLead(lead({ uniqueId: "2", source: "AgentForm" }))).toBe(
+      false,
+    );
     expect(
       isRideGuideLead(lead({ uniqueId: "3", source: "Call Centre" })),
     ).toBe(false);
@@ -55,7 +55,10 @@ describe("agentHasMadeContact", () => {
   it("true when the notes hold an attributed entry", () => {
     expect(
       agentHasMadeContact(
-        lead({ uniqueId: "1", notes: "9:00am 01/07/26 Dave Thompson: Called." }),
+        lead({
+          uniqueId: "1",
+          notes: "9:00am 01/07/26 Dave Thompson: Called.",
+        }),
       ),
     ).toBe(true);
   });

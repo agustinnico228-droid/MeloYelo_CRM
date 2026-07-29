@@ -50,8 +50,7 @@ const updateSchema = z
   .strict();
 
 type Guarded =
-  | { error: string }
-  | { user: { email: string; name: string }; lead: Lead };
+  { error: string } | { user: { email: string; name: string }; lead: Lead };
 
 async function guard(uniqueId: string): Promise<Guarded> {
   const user = await getSessionUser();
@@ -63,11 +62,11 @@ async function guard(uniqueId: string): Promise<Guarded> {
   const viewingAs = await getViewAs(user);
   if (viewingAs) {
     return {
-      error: `You're viewing as ${viewingAs.name} — read-only. Exit view-as to make changes.`,
+      error: `You're viewing as ${viewingAs.name}. Read-only. Exit view-as to make changes.`,
     };
   }
   if (!allowWrite(user.email)) {
-    return { error: "Too many changes at once — wait a moment and try again." };
+    return { error: "Too many changes at once. Wait a moment and try again." };
   }
   const core = await getCoreData();
   const lead = core.leads.find((l) => l.uniqueId === uniqueId);
@@ -98,7 +97,10 @@ const CHANGE_LABELS: Record<keyof z.infer<typeof changesSchema>, string> = {
 export async function saveLeadChanges(input: unknown): Promise<ActionResult> {
   const parsed = updateSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: "That change didn't look right — nothing was saved." };
+    return {
+      ok: false,
+      error: "That change didn't look right, so nothing was saved.",
+    };
   }
   const { uniqueId, changes, noteText, stageTo } = parsed.data;
   if (!changes && !noteText && !stageTo) return { ok: true };
@@ -111,7 +113,7 @@ export async function saveLeadChanges(input: unknown): Promise<ActionResult> {
   if (stageTo && !isForwardMove(lead.stage, stageTo)) {
     return {
       ok: false,
-      error: `Stage can only move forward — this lead is already at "${lead.stage}".`,
+      error: `Stage can only move forward. This lead is already at "${lead.stage}".`,
     };
   }
 
@@ -120,7 +122,10 @@ export async function saveLeadChanges(input: unknown): Promise<ActionResult> {
     user,
   );
   if (!result.ok) {
-    return { ok: false, error: result.error ?? "The change didn't save. Try again." };
+    return {
+      ok: false,
+      error: result.error ?? "The change didn't save. Try again.",
+    };
   }
 
   const audits: Omit<AuditEntry, "timestamp">[] = [];
@@ -190,11 +195,14 @@ export async function reassignLead(input: unknown): Promise<ActionResult> {
   if (viewingAs) {
     return {
       ok: false,
-      error: `You're viewing as ${viewingAs.name} — read-only. Exit view-as to make changes.`,
+      error: `You're viewing as ${viewingAs.name}. Read-only. Exit view-as to make changes.`,
     };
   }
   if (!allowWrite(user.email)) {
-    return { ok: false, error: "Too many changes at once — wait a moment and try again." };
+    return {
+      ok: false,
+      error: "Too many changes at once. Wait a moment and try again.",
+    };
   }
 
   const core = await getCoreData();
@@ -206,7 +214,10 @@ export async function reassignLead(input: unknown): Promise<ActionResult> {
     name: user.name,
   });
   if (!result.ok) {
-    return { ok: false, error: result.error ?? "The reassignment didn't save." };
+    return {
+      ok: false,
+      error: result.error ?? "The reassignment didn't save.",
+    };
   }
 
   await recordAudit([

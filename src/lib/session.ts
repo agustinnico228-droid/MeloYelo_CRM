@@ -52,9 +52,6 @@ export async function requireUser(): Promise<SessionUser> {
  * for users without the role (§11 /dashboards) — this helper only answers
  * the question.
  */
-export function hasRole(
-  user: SessionUser,
-  ...roles: readonly Role[]
-): boolean {
+export function hasRole(user: SessionUser, ...roles: readonly Role[]): boolean {
   return user.role !== null && roles.includes(user.role);
 }

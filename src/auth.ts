@@ -17,6 +17,12 @@ export const allowedDomain =
   "meloyelo.nz";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Production Auth.js refuses hosts it hasn't been told to trust
+  // (UntrustedHost). We always run behind infrastructure that sets the
+  // Host header trustworthily — localhost in testing, Google's load
+  // balancer on Cloud Run — so trusting it is the documented setting
+  // for self-hosted deployments.
+  trustHost: true,
   secret:
     process.env.AUTH_SECRET ??
     (process.env.NODE_ENV !== "production"

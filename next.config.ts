@@ -23,6 +23,7 @@ const INTRANET_REDIRECTS: { source: string; destination: string }[] = [
     source: "/growth-marketing/campaign-naming-and-utm-convention",
     destination: "/growth/utm-convention",
   },
+  { source: "/news-from-hq", destination: "/news" },
   { source: "/crm/crm-info-instructions", destination: "/guides" },
   { source: "/crm/managers-dashboard", destination: "/dashboards/manager" },
   { source: "/crm/crm-dashboard", destination: "/dashboards" },

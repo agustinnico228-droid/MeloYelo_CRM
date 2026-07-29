@@ -51,13 +51,21 @@ describe("needsActionNow (§11)", () => {
   it("Made contact goes stale after 48h without a stage change", () => {
     expect(
       needsActionNow(
-        { ...base, stage: "Made contact", stageUpdatedAt: "12/07/2026 09:18:26" },
+        {
+          ...base,
+          stage: "Made contact",
+          stageUpdatedAt: "12/07/2026 09:18:26",
+        },
         now,
       ),
     ).toBe(true);
     expect(
       needsActionNow(
-        { ...base, stage: "Made contact", stageUpdatedAt: "21/07/2026 15:00:00" },
+        {
+          ...base,
+          stage: "Made contact",
+          stageUpdatedAt: "21/07/2026 15:00:00",
+        },
         now,
       ),
     ).toBe(false);
@@ -66,7 +74,12 @@ describe("needsActionNow (§11)", () => {
   it("Made contact with an unparseable date is shown, not hidden", () => {
     expect(
       needsActionNow(
-        { ...base, stage: "Made contact", stageUpdatedAt: "??", dateAdded: "??" },
+        {
+          ...base,
+          stage: "Made contact",
+          stageUpdatedAt: "??",
+          dateAdded: "??",
+        },
         now,
       ),
     ).toBe(true);
@@ -74,6 +87,8 @@ describe("needsActionNow (§11)", () => {
 
   it("later stages don't qualify without a flag", () => {
     expect(needsActionNow({ ...base, stage: "MY Customer" }, now)).toBe(false);
-    expect(needsActionNow({ ...base, stage: "Test Ride Booked" }, now)).toBe(false);
+    expect(needsActionNow({ ...base, stage: "Test Ride Booked" }, now)).toBe(
+      false,
+    );
   });
 });

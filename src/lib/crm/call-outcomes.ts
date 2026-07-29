@@ -42,13 +42,13 @@ export const OUTCOMES: OutcomeDef[] = [
   },
   {
     key: "declinedNotInterested",
-    label: "Declined — not interested",
+    label: "Declined - not interested",
     stageTo: "Test Ride Declined",
     offersUnsubscribe: true,
   },
   {
     key: "declinedBoughtElsewhere",
-    label: "Declined — bought elsewhere",
+    label: "Declined - bought elsewhere",
     stageTo: "Test Ride Declined",
     offersUnsubscribe: true,
   },
@@ -108,7 +108,8 @@ export function composeOutcome(
 
   const forward = isForwardMove(params.currentStage, def.stageTo);
   return {
-    stageTo: forward && def.stageTo !== params.currentStage ? def.stageTo : undefined,
+    stageTo:
+      forward && def.stageTo !== params.currentStage ? def.stageTo : undefined,
     noteText,
     stageSkipped: !forward,
   };

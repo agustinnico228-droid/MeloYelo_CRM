@@ -60,7 +60,12 @@ const COLUMNS: ColDef[] = [
   { key: "serial", label: "Serial", editable: true, width: "w-32" },
   { key: "agent", label: "Agent", editable: false, width: "w-36" },
   { key: "dateAdded", label: "Added", editable: false, width: "w-40" },
-  { key: "speedToLeadMinutes", label: "Speed (min)", editable: false, width: "w-28" },
+  {
+    key: "speedToLeadMinutes",
+    label: "Speed (min)",
+    editable: false,
+    width: "w-28",
+  },
   { key: "source", label: "Source", editable: false, width: "w-36" },
 ];
 
@@ -278,7 +283,7 @@ export default function LeadsGrid({ leads }: { leads: GridLead[] }) {
     <div className="mt-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <details className="relative">
-          <summary className="flex min-h-12 cursor-pointer list-none items-center rounded-control border border-my-line bg-my-surface px-4 font-medium">
+          <summary className="btn-quiet cursor-pointer list-none">
             Columns
           </summary>
           <div className="absolute z-30 mt-1 w-56 rounded-card border border-my-line bg-my-surface p-3 shadow-card">
@@ -295,11 +300,7 @@ export default function LeadsGrid({ leads }: { leads: GridLead[] }) {
             ))}
           </div>
         </details>
-        <button
-          type="button"
-          onClick={exportCsv}
-          className="min-h-12 rounded-control border border-my-line bg-my-surface px-4 font-medium transition-colors hover:bg-my-paper"
-        >
+        <button type="button" onClick={exportCsv} className="btn-quiet">
           Export CSV
         </button>
       </div>
@@ -314,14 +315,15 @@ export default function LeadsGrid({ leads }: { leads: GridLead[] }) {
       ) : null}
 
       <p className="mt-2 text-sm text-my-slate">
-        Double-click or press Enter to edit · arrows and Tab to move · Esc
-        to cancel
+        Double-click or press Enter to edit - arrows and Tab to move - Esc to
+        cancel
       </p>
 
       <div
         ref={gridRef}
         tabIndex={0}
         role="grid"
+        aria-label="Leads"
         aria-rowcount={rows.length}
         onKeyDown={onGridKeyDown}
         className="mt-2 rounded-card border border-my-line bg-my-surface shadow-card outline-none focus-visible:ring-2 focus-visible:ring-my-ink"
@@ -382,6 +384,7 @@ export default function LeadsGrid({ leads }: { leads: GridLead[] }) {
                               <select
                                 autoFocus
                                 value={draft}
+                                aria-label={`Edit ${c.label}`}
                                 onChange={(e) => setDraft(e.target.value)}
                                 onBlur={() => stopEdit(true)}
                                 onKeyDown={(e) => {
@@ -398,6 +401,7 @@ export default function LeadsGrid({ leads }: { leads: GridLead[] }) {
                               <input
                                 autoFocus
                                 value={draft}
+                                aria-label={`Edit ${c.label}`}
                                 onChange={(e) => setDraft(e.target.value)}
                                 onBlur={() => stopEdit(true)}
                                 onKeyDown={(e) => {
@@ -430,7 +434,10 @@ export default function LeadsGrid({ leads }: { leads: GridLead[] }) {
                 );
               })}
               {last < rows.length ? (
-                <tr style={{ height: (rows.length - last) * ROW_H }} aria-hidden>
+                <tr
+                  style={{ height: (rows.length - last) * ROW_H }}
+                  aria-hidden
+                >
                   <td colSpan={cols.length} />
                 </tr>
               ) : null}

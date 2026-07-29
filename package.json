@@ -4,14 +4,19 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:no-turbo": "next dev",
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
     "seed": "payload run ./scripts/seed.ts",
-    "parity": "payload run ./scripts/content-parity.ts"
+    "parity": "payload run ./scripts/content-parity.ts",
+    "refresh-pages": "payload run ./scripts/refresh-pages.ts",
+    "sync": "payload run ./scripts/sync-content.ts",
+    "sync-nav": "payload run ./scripts/sync-nav.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.86.0",
+    "@payloadcms/live-preview-react": "^3.86.0",
     "@payloadcms/next": "^3.86.0",
     "@payloadcms/richtext-lexical": "^3.86.0",
     "@payloadcms/storage-gcs": "^3.86.0",

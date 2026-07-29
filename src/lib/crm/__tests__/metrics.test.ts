@@ -113,7 +113,11 @@ describe("everReachedRate (B3) — events, not current state", () => {
         agent: "X",
       },
     ];
-    const r = everReachedRate([booked, current, never], history, "Test Ride Booked");
+    const r = everReachedRate(
+      [booked, current, never],
+      history,
+      "Test Ride Booked",
+    );
     expect(r.count).toBe(2);
     expect(r.percent).toBeCloseTo((2 / 3) * 100);
   });

@@ -54,9 +54,9 @@ export default function PageBlocks({ blocks }: { blocks: Block[] }) {
                 key={i}
                 href={file.url}
                 download
-                className="flex min-h-12 items-center gap-2 rounded-control border border-my-line bg-my-surface px-4 font-medium shadow-card transition-colors hover:bg-my-paper"
+                className="btn-quiet flex justify-start gap-2"
               >
-                ⬇ {block.label}
+                {block.label}
               </a>
             );
           }
@@ -106,9 +106,9 @@ export default function PageBlocks({ blocks }: { blocks: Block[] }) {
                   href={block.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-2 inline-flex min-h-12 items-center rounded-control border border-my-line bg-my-surface px-4 text-sm font-medium transition-colors hover:bg-my-paper"
+                  className="btn-quiet mt-2"
                 >
-                  Open the source document ↗
+                  Open the source document in a new tab
                 </a>
               </div>
             );
@@ -154,7 +154,8 @@ export interface TocEntry {
 export function extractToc(blocks: Block[]): TocEntry[] {
   const entries: TocEntry[] = [];
   for (const block of blocks) {
-    if (block.blockType !== "richText" && block.blockType !== "callout") continue;
+    if (block.blockType !== "richText" && block.blockType !== "callout")
+      continue;
     const children =
       (block.content as { root?: { children?: LexicalHeading[] } })?.root
         ?.children ?? [];

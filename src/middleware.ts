@@ -25,7 +25,9 @@ export const config = {
   // /admin and /api/* belong to Payload, which enforces its own auth and
   // per-collection access control — the hub's middleware must not
   // intercept the CMS login flow. /api/auth stays with Auth.js.
+  // Public image assets (logo, icons) are brand files, never customer
+  // data — they stay reachable without a session.
   matcher: [
-    "/((?!signin|api/|admin|_next/static|_next/image|favicon.ico|fonts/|media/).*)",
+    "/((?!signin|api/|admin|_next/static|_next/image|favicon.ico|fonts/|media/|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)",
   ],
 };

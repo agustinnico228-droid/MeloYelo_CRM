@@ -19,7 +19,11 @@ export const DEFAULT_NAV: NavNode[] = [
   { label: "Home", url: "/", audience: "all" },
   { label: "News from HQ", url: "/news", audience: "all" },
   { label: "Conference 2026", url: "/conference", audience: "all" },
-  { label: "The Confidence to Win", url: "/confidence-to-win", audience: "all" },
+  {
+    label: "The Confidence to Win",
+    url: "/confidence-to-win",
+    audience: "all",
+  },
   {
     label: "CRM",
     audience: "all",
@@ -44,13 +48,18 @@ export const DEFAULT_NAV: NavNode[] = [
       {
         label: "Managers Dashboard",
         url: "/dashboards/manager",
-        audience: "managers",
+        audience: "all",
       },
       { label: "CRM Glitches", url: "/known-issues", audience: "all" },
       { label: "CRM Info & Instructions", url: "/guides", audience: "all" },
       {
         label: "Marketing Reports",
         url: "/reports/marketing",
+        audience: "all",
+      },
+      {
+        label: "CRM Development Notes",
+        url: "/crm-development",
         audience: "managers",
       },
     ],
@@ -79,45 +88,90 @@ export const DEFAULT_NAV: NavNode[] = [
   },
   {
     label: "Growth & Marketing",
-    audience: "managers",
+    audience: "all",
     children: [
       {
         label: "Growth Dashboard",
         url: "/dashboards/growth",
-        audience: "managers",
+        audience: "all",
       },
-      { label: "Growth targets Q1", url: "/growth/targets-q1", audience: "managers" },
-      { label: "Growth Team Meetings", url: "/growth/meetings", audience: "managers" },
+      {
+        label: "Growth targets Q1",
+        url: "/growth/targets-q1",
+        audience: "all",
+      },
+      {
+        label: "Growth Team Meetings",
+        url: "/growth/meetings",
+        audience: "all",
+      },
       {
         label: "Ad Performance",
         url: "/dashboards/ads",
-        audience: "managers",
+        audience: "all",
       },
-      { label: "Google Ads Analysis", url: "/growth/google-ads", audience: "managers" },
-      { label: "Meta Ads Analysis", url: "/growth/meta-ads", audience: "managers" },
-      { label: "Metrics definitions", url: "/growth/metrics", audience: "managers" },
+      {
+        label: "Google Ads Analysis",
+        url: "/growth/google-ads",
+        audience: "all",
+      },
+      {
+        label: "Meta Ads Analysis",
+        url: "/growth/meta-ads",
+        audience: "all",
+      },
+      {
+        label: "Metrics definitions",
+        url: "/growth/metrics",
+        audience: "all",
+      },
       {
         label: "Campaign Naming & UTM Convention",
         url: "/growth/utm-convention",
-        audience: "managers",
+        audience: "all",
       },
     ],
   },
-  { label: "Resources", url: "/resources", audience: "all" },
+  {
+    label: "Resources",
+    url: "/resources",
+    audience: "all",
+    children: [
+      {
+        label: "Agent Interviews",
+        url: "/resources/agent-interviews",
+        audience: "all",
+      },
+      { label: "Support", url: "/resources/support", audience: "all" },
+      {
+        label: "Product catalogue",
+        url: "/resources/product-catalogue",
+        audience: "all",
+      },
+      {
+        label: "Test ride checklist",
+        url: "/resources/test-ride-checklist",
+        audience: "all",
+      },
+      {
+        label: "Knowledge Base",
+        url: "/resources/knowledge-base",
+        audience: "all",
+      },
+    ],
+  },
 ];
 
 /** Which nav audiences a hub role sees. */
 export function navAudiencesFor(
   role: "agent" | "ride_guide" | "manager" | "admin" | null,
 ): NavAudience[] {
-  if (role === "manager" || role === "admin") return ["all", "agents", "managers"];
+  if (role === "manager" || role === "admin")
+    return ["all", "agents", "managers"];
   return ["all", "agents"];
 }
 
-export function filterNav(
-  nodes: NavNode[],
-  allowed: NavAudience[],
-): NavNode[] {
+export function filterNav(nodes: NavNode[], allowed: NavAudience[]): NavNode[] {
   return nodes
     .filter((n) => allowed.includes(n.audience))
     .map((n) => ({

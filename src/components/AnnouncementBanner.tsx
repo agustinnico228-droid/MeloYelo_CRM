@@ -72,7 +72,19 @@ export default function AnnouncementBanner({
               aria-label={`Dismiss announcement: ${a.title}`}
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control text-my-slate transition-colors hover:bg-my-paper"
             >
-              ✕
+              <svg
+                aria-hidden="true"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <path d="M3 3l10 10" />
+                <path d="M13 3L3 13" />
+              </svg>
             </button>
           ) : null}
         </div>

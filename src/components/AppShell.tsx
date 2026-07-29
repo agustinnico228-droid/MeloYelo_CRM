@@ -1,5 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
+import { signOutAction } from "@/lib/actions/sign-out";
 import { stopViewAs } from "@/lib/actions/view-as";
+import SidebarNav, { MobileNav } from "@/components/SidebarNav";
 import type { NavNode } from "@/lib/nav";
 import { hasRole, type SessionUser } from "@/lib/session";
 import type { ViewAsTarget } from "@/lib/view-as";
@@ -7,7 +10,11 @@ import type { ViewAsTarget } from "@/lib/view-as";
 /**
  * The one nav (§11). The tree comes from the CMS `navigation` global
  * (intranet-mirroring fallback); role-only items are appended in code.
- * Mobile keeps the four core actions on the bottom bar.
+ * Mobile keeps the four core actions on the bottom bar. SidebarNav
+ * (client) highlights the current page and opens its group.
+ *
+ * Chrome mirrors meloyelo.nz: black bars with the yellow logo, a yellow
+ * strip under the header, white links that hover to brand yellow.
  */
 
 const MOBILE_NAV = [
@@ -16,20 +23,6 @@ const MOBILE_NAV = [
   { href: "/pipeline", label: "Pipeline" },
   { href: "/leads/new", label: "Add lead" },
 ];
-
-function SidebarLink({ node, indent }: { node: NavNode; indent?: boolean }) {
-  if (!node.url) return null;
-  return (
-    <Link
-      href={node.url}
-      className={`block min-h-11 rounded-control px-3 py-2.5 text-sm font-medium text-my-ink transition-colors hover:bg-my-paper ${
-        indent ? "pl-6" : ""
-      }`}
-    >
-      {node.label}
-    </Link>
-  );
-}
 
 export default function AppShell({
   user,
@@ -49,16 +42,13 @@ export default function AppShell({
   return (
     <div className="min-h-svh">
       {viewingAs ? (
-        <div className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-2 bg-my-ink px-4 py-2 text-white">
+        <div className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-2 border-b-2 border-my-yellow bg-my-ink px-4 py-2 text-white">
           <p className="text-sm font-medium">
-            Viewing as {viewingAs.name} — you see exactly what they see.
+            Viewing as {viewingAs.name}: you see exactly what they see.
             Read-only.
           </p>
           <form action={stopViewAs}>
-            <button
-              type="submit"
-              className="min-h-10 rounded-control bg-my-yellow px-4 text-sm font-bold text-my-ink transition-opacity hover:opacity-90"
-            >
+            <button type="submit" className="btn-brand min-h-10 px-4">
               Exit
             </button>
           </form>
@@ -66,110 +56,100 @@ export default function AppShell({
       ) : null}
 
       <div className="md:flex">
-        {/* Sidebar — desktop */}
-        <aside className="hidden w-64 shrink-0 border-r border-my-line bg-my-surface md:flex md:flex-col">
-          <Link href="/" className="flex items-center gap-3 px-5 py-5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-control bg-my-yellow">
-              <span className="font-display font-bold text-my-ink">MY</span>
-            </span>
-            <span className="font-display font-bold">mY Hub</span>
-          </Link>
-          <nav
-            className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2"
-            aria-label="Main"
+        {/* Sidebar — desktop. Black like the site header, yellow strip below the logo. */}
+        <aside className="hidden w-64 shrink-0 bg-my-ink md:flex md:flex-col">
+          <Link
+            href="/"
+            className="flex items-center border-b-4 border-my-yellow px-5 py-5"
           >
-            {nav.map((node) =>
-              node.children && node.children.length > 0 ? (
-                <details key={node.label} open={node.label === "CRM"}>
-                  <summary className="min-h-11 cursor-pointer list-none rounded-control px-3 py-2.5 text-sm font-bold text-my-ink transition-colors hover:bg-my-paper">
-                    {node.label}
-                  </summary>
-                  {node.url ? (
-                    <SidebarLink
-                      node={{ ...node, label: `${node.label} home` }}
-                      indent
-                    />
-                  ) : null}
-                  {node.children.map((child) => (
-                    <SidebarLink key={child.label} node={child} indent />
-                  ))}
-                </details>
-              ) : (
-                <SidebarLink key={node.label} node={node} />
-              ),
-            )}
-
-            {isRideGuide || isManager ? (
-              <div className="mt-2 border-t border-my-line pt-2">
-                {isRideGuide ? (
-                  <SidebarLink
-                    node={{
+            <Image
+              src="/meloyelo-logo.png"
+              alt="MeloYelo mY Hub home"
+              width={2560}
+              height={452}
+              priority
+              className="h-12 w-auto"
+            />
+          </Link>
+          <SidebarNav
+            nav={nav}
+            extras={[
+              ...(isRideGuide
+                ? [
+                    {
                       label: "Ride Guide queue",
                       url: "/ride-guide/queue",
-                      audience: "all",
-                    }}
-                  />
-                ) : null}
-                {isManager ? (
-                  <>
-                    <SidebarLink
-                      node={{
-                        label: "View as agent",
-                        url: "/view-as",
-                        audience: "managers",
-                      }}
-                    />
-                    <SidebarLink
-                      node={{
-                        label: "System",
-                        url: "/system",
-                        audience: "managers",
-                      }}
-                    />
-                  </>
-                ) : null}
-              </div>
-            ) : null}
-          </nav>
-          <div className="border-t border-my-line px-5 py-4 text-sm text-my-slate">
-            {user.name}
-            {user.role ? (
-              <span className="block capitalize">
-                {user.role.replace("_", " ")}
-              </span>
-            ) : null}
+                      audience: "all" as const,
+                    },
+                  ]
+                : []),
+              ...(isManager
+                ? [
+                    {
+                      label: "View as agent",
+                      url: "/view-as",
+                      audience: "managers" as const,
+                    },
+                    {
+                      label: "System",
+                      url: "/system",
+                      audience: "managers" as const,
+                    },
+                    {
+                      label: "Edit site",
+                      url: "/admin",
+                      audience: "managers" as const,
+                    },
+                  ]
+                : []),
+            ]}
+          />
+          <div className="flex items-center justify-between gap-3 border-t border-white/15 px-5 py-4 text-sm text-white/80">
+            <div className="min-w-0">
+              <span className="block truncate">{user.name}</span>
+              {user.role ? (
+                <span className="block capitalize text-white/60">
+                  {user.role.replace("_", " ")}
+                </span>
+              ) : null}
+            </div>
+            <form action={signOutAction}>
+              <button
+                type="submit"
+                className="min-h-10 shrink-0 rounded-control border border-white/25 px-3 text-sm font-medium text-white transition-colors hover:border-my-yellow hover:text-my-yellow"
+              >
+                Sign out
+              </button>
+            </form>
           </div>
         </aside>
 
-        {/* Top bar — mobile */}
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-my-line bg-my-surface px-4 py-3 md:hidden">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-control bg-my-yellow">
-              <span className="font-display text-sm font-bold text-my-ink">
-                MY
-              </span>
-            </span>
-            <span className="font-display font-bold">mY Hub</span>
+        {/* Top bar — mobile. Same black-plus-yellow-strip header. */}
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b-4 border-my-yellow bg-my-ink px-4 py-3 md:hidden">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/meloyelo-logo.png"
+              alt="MeloYelo mY Hub"
+              width={2560}
+              height={452}
+              priority
+              className="h-10 w-auto"
+            />
           </Link>
+          <form action={signOutAction}>
+            <button
+              type="submit"
+              className="min-h-10 rounded-control border border-white/25 px-3 text-sm font-medium text-white transition-colors hover:border-my-yellow hover:text-my-yellow"
+            >
+              Sign out
+            </button>
+          </form>
         </header>
 
         <div className="min-w-0 flex-1 pb-20 md:pb-0">{children}</div>
 
-        {/* Bottom nav — mobile, thumb-friendly */}
-        <nav
-          aria-label="Main"
-          className="fixed inset-x-0 bottom-0 z-20 flex border-t border-my-line bg-my-surface md:hidden"
-        >
-          {MOBILE_NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex min-h-14 flex-1 items-center justify-center text-sm font-medium text-my-ink"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        {/* Bottom nav — mobile, thumb-friendly, black like the footer */}
+        <MobileNav items={MOBILE_NAV} />
       </div>
     </div>
   );
